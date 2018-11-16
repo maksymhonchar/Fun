@@ -1,0 +1,7 @@
+https://stackoverflow.com/questions/33752407/mysqld-cant-change-dir-to-data-server-doesnt-start
+https://www.ntu.edu.sg/home/ehchua/programming/sql/MySQL5.6_HowTo.html
+
+default root password
+https://dev.mysql.com/doc/refman/5.7/en/resetting-permissions.html
+https://stackoverflow.com/questions/2101694/how-to-set-root-password-to-null
+https://stackoverflow.com/questions/30692812/mysql-user-db-does-not-have-password-columns-installing-mysql-on-osx

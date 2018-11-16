@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Guess the language!</title>
+</head>
+<body>
+    <h1>Guess the programming language.</h1>
+    <p>My guess: {{ guess }}</p>
+    <p>Was I right?</p>
+    <form method="POST">
+        {{ form.hidden_tag() }}
+        <p>
+            {% for option in form.answer %}
+                {{ option }} {{ option.label }} <br />
+            {% endfor %}
+            {% for error in form.answer.errors %}
+                [{{ error }}]
+            {% endfor %}
+        </p>
+        {{ form.submit }}
+    </form>
+</body>
+</html>

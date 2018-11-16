@@ -1,0 +1,206 @@
+---------------------------------------------------------------------------------------
+1) Initialize a new git repository:
+	>git init 
+	1.1) Create a bare repository:
+		>git init --bare test_repo.git
+---------------------------------------------------------------------------------------
+2) Global configuration (means, that these settings will be applied for all repositores on the computer. Settings are saved in .gitconfig file.
+	2.1) Config global configuration for the user name:
+		>git config --global user.name "my_name_for_repo" 
+	2.2) Config global configuration for the user email:
+		>git config --global user.mail "my_user_email"
+	2.3) List all the settings of your Git:
+		>git config --list
+	2.4.) Save pass and login of your GitHub account in bash for N timeout:
+		>git config --global credential.helper cache
+		>git config --global credential.helper "cache --timeout=3600"
+---------------------------------------------------------------------------------------
+3) To ignore some files, use .gitignore document in repository folder. Example of casual .gitignore file:
+[.gitignore]
+[
+# folder logs
+logs/
+
+# txt files
+docs/*.txt
+]
+---------------------------------------------------------------------------------------
+4) git status - shows current state of current branch:
+	>git status
+	4.1) To show untracked files from whole repository, if you are inside of some folder of this repository (if you are at /reporoot/somefolder), use flag --untracked-files:
+		>git status --untracked-files=all
+---------------------------------------------------------------------------------------
+5) To add all files to index:
+	>git add .
+	5.1) [git add *] doesn't respect .gitignore. It is actually a shell feautre, but it works.
+	5.2) To stage All (new, modified, deleted) files:
+		>git add -A
+	5.3) To stage New and Modified files only (doesn't add deleted files):
+		>git add .
+	5.4) To stage modified and deleted files only (doesn't add new files):
+		>git add -u
+	5.5) To stage all files by extension:
+		>git add ".extension"
+---------------------------------------------------------------------------------------
+6) To remove files from index (staging) use rm. After that, chosen file will be untracked
+	>git rm --cached my_file_name
+---------------------------------------------------------------------------------------
+7) To commit all changed files to the versioned history:
+	>git commit -m "commit message"
+	7.1) To commit all tracked files to versioned history:
+	>git commit -am "commit message"
+---------------------------------------------------------------------------------------
+8) To revert changes for certain file to the current repository state:
+	>git checkout -- file.extension
+	8.1) Revert everything to the last commit:
+		>git reset --hard
+	8.2) Drop all local changes and commits:
+		>git fetch origin
+		>git reset --hard origin/master
+	8.3) Reset repository to the state at that time + keep changes as [changes to be committed]:
+		>git reset --soft
+	8.4) idk, just another snippet to revert changes.
+		>git fetch --all
+		>git fetch --tags
+		>git reset --hard origin/master
+---------------------------------------------------------------------------------------
+9) To view log of changes (history of commits):
+	>git log
+	9.1) Compact way for the log with the --pretty key:
+		>git log --pretty=format: "%h - %an, %ar : %s"
+		%h - short code of the commit
+		%an - author name
+		%ar - when file was committed
+		%s - commit comment	
+	9.2) Get commits for some period of time:
+		>git log --since=2.weeks
+	9.3) Get changes from the last commits:
+		>git log -p -2
+		[-2] - means get info about two commits
+		9.3.1) Show change history for file/directory including diffs:
+			>git log -p [file/directory]
+	9.4) Get only the commits of a certain author:
+		>git log --author=name
+	9.5) See a very compressed log where each commit is one line:
+		>git log --pretty=oneline
+	9.6) Beautiful art-tree of all the branches, decorated with the names of tags and branches:
+		>git log --graph --oneline --decorate --all
+---------------------------------------------------------------------------------------
+10) Gettings help for certain git command:
+	>git help command_name
+	>git command_name --help
+	>man git-command_name
+---------------------------------------------------------------------------------------
+11) Create a new branch and switch to it:
+	>git checkout -b new_branch
+	11.1) Just create a new branch
+		>git branch new_branch
+	11.2) a branch is not available to others unless you push the branch to your remote repository:
+	>git push origin new_branch
+---------------------------------------------------------------------------------------
+12) Get list of all available branches:
+	>git branch
+	12.1) List all branches, local and remote (-a) + info about last commit (-v):
+		>git branch -av
+---------------------------------------------------------------------------------------
+13) Delete a branch:
+	>git branch -d branch_todelete
+---------------------------------------------------------------------------------------
+14) Get info about branches and its last commit:
+	>git branch -v
+---------------------------------------------------------------------------------------
+15) Update a GitHub forked repository:
+	>git remote add upstream https://github.com/whoever/whatever.git
+	>git fetch upstream
+	>git checkout master
+	# Rewrite a master branch so that any commits of yours that aren't already in upstream/master are replayed on top of that other branch:
+	>git rebase upstream/master
+---------------------------------------------------------------------------------------
+16) Update local repository to the newest commit, use pull. It will fetch and merge remote changes:
+	>git pull
+	This is the same as 
+	>git fetch <remote>
+	>git merge origin/<current_branch>
+16.1) Get the last changes from origin (no merge). This command grabs all the latest commits from the remote repository and imports them into a remote branch:
+	>git fetch
+16.2) Fetch the latest changes to the origin and rebase. Actually this is a git fetch followed by a git rebase commands:
+	>git pull --rebase
+	[rebase] - it's a mechanism that allows a user to applt local commits on top of the incoming commits, rather than to have two chains in parallel that need to be merged.
+16.3) Working with remote repository: move local changes onto the top of what everybody else has already contributed:
+	>git checkout master
+	>git pull --rebase
+---------------------------------------------------------------------------------------
+17) Recommended to create tags for software releases (look: SVN = Subversion = version control system). Create tag:
+	>git tag 1.0.0 [commit_id_10_characters]
+---------------------------------------------------------------------------------------
+18) Compare what is in your working directory with what is in your staging area:
+	>git diff
+18.1) Show the changes to staged files:
+	>git diff --cached
+18.2) Show all staged and unstaged file changes:
+	>git diff HEAD
+18.3) Show the changes between two commit ids:
+	>git diff commit1 commit2
+	18.4) Show the changes for a commit id and/or file:
+		>git show [commit]:[file]
+---------------------------------------------------------------------------------------
+19) Merge branch_a to branch_b:
+	>git checkout branch_b
+	>git merge branch_a
+---------------------------------------------------------------------------------------
+20) Push every commit to remote repository:
+	>git push
+20.1) To push tags user has to use origin:
+	>git push origin [tag name]
+20.2) Push all tags to remote repository:
+	>git push origin --tags
+---------------------------------------------------------------------------------------
+Main structure of git system + commands directions:
+
+[WORKING DIRECTORY] [STAGING (index)] [LOCAL REPOSITORY] [REMOTE REPOSITORY]
+1. Adding things:
+add - from [working directory] to [staging (index)]
+commit - from [staging (index)] to [local repository]
+push - from [local repository] to [remote repository]
+2. Deleting things:
+reset - from [staging (index)] to [working directory]
+reset [commit] - from [local repository] to [working directory]
+fetch - from [remote repository] to [local repository]
+pull 1 - from [remote repository] to [local repository]
+pull 2 - from [remote repository] to [working directory]
+---------------------------------------------------------------------------------------
+__author__ = http://nvie.com/posts/a-successful-git-branching-model/
+__branching_model__ = http://nvie.com/files/Git-branching-model.pdf
+Branching is an imortant practice for keeping new feature separate from other changes in master branch. So branches names should be obvious, when you create them. 
+	Successful Git branching model will have such branches:
+	>master. Naming: [v*]
+	>hotfixes. 
+		Naming: [hotfix-*]
+		Hotfix branches:
+		a) may branch off from [master]
+		b) must merge back into [develop] or [master]
+	>release. 
+		Naming: [release-*]
+		These branches support preparation of a new production release.
+		Release branches:
+		a) may branch off from [develop]
+		b) must merge back into [develop] or [master]
+	>develop.
+	>feature branches. 
+		Naming: [*], except of previous namings.
+		Feature branches:
+		a) may branch off from [develop]
+		b) must merge back into [develop]
+---------------------------------------------------------------------------------------
+Other useful hints:
+a) Built-in git GUI
+	>gitk
+b) Use colorful git output:
+	>git config color.ui true
+c) git config format.pretty oneline
+d) Difference between [staged files] and [tracked files]
+Every staged file is a tracked file, but not every tracked file is staged.
+In the staging area, user collects the changes that make up the next commit.
+So if user modifies one file and add its changes to the index, that one file is staged, while all other already commited files are also tracked files.
+e) Staged files - the things you changed, but have not used the command git add yet.
+

@@ -1,0 +1,15 @@
+<p>
+    {% if user %}
+        Hello, {{ user }}!
+    {% else %}
+        Hello, stranger! Please, log in.
+    {% endif %}
+</p>
+
+<br />
+
+<p>
+    {% for item in users %}
+        <ol> {{ item }} </ol>
+    {% endfor %}
+</p>

@@ -1,0 +1,9 @@
+CREATE DATABASE myproject CHARACTER SET UTF8;
+
+CREATE USER myprojectuser@localhost IDENTIFIED BY 'password';
+
+GRANT ALL PRIVILEGES ON myproject.* TO myprojectuser@localhost;
+
+FLUSH privileges;
+
++ https://www.digitalocean.com/community/tutorials/how-to-use-mysql-or-mariadb-with-your-django-application-on-ubuntu-14-04

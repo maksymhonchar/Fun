@@ -1,0 +1,1 @@
+NOTE, that you should add qcustomplot.cpp and qcustomplot.h to use following example.x
