@@ -31,4 +31,4 @@ first_ten_entries = data1(1:10)
 % save myfile.mat first_ten_entries  % save data to disc
 
 % my_pi = pi
-% save myfile.txt my_pi -ascii  % sae as text (ASCII)
+% save myfile.txt my_pi -ascii  % save as text (ASCII)
