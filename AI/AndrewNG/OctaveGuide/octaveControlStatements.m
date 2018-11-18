@@ -1,4 +1,4 @@
-% for-loop:
+% For loop.
 v = zeros(10, 1);
 for i=1:10,
   v(i) = 2^i;
@@ -28,5 +28,3 @@ elseif v(1) == 2,
 else
   disp('The value is neither one or two')
 endif;
-
-exit
