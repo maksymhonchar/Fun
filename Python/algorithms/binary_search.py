@@ -18,6 +18,21 @@ def binary_search(data, target, low, high):
         if target == data[mid]:
             return True
         elif target < data[mid]:
-            return binary_search(data, target, 0, mid-1)
+            return binary_search(data, target, low, mid-1)
         else:
             return binary_search(data, target, mid+1, high)
+
+
+def binary_search_iterative(data, target):
+    """Return True if target is foudn in the given list."""
+    low = 0
+    high = len(data) - 1
+    while low <= high:
+        mid = (low + high) // 2
+        if target == data[mid]:  # Found a match.
+            return True
+        elif target < data[mid]:
+            high = mid - 1  # consider values left of mid.
+        else:
+            low = mid + 1  # consider values right of mid.
+    return False
