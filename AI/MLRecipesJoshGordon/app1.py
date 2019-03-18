@@ -12,7 +12,7 @@ from sklearn.neighbors import KNeighborsClassifier
 def first_ml_problem():
     # First 2 columns.  "Input".
     # [0]:weight, g.  [1]:0 bumpy, 1 smooth.
-    features = [[140,1], [130,1], [150,0], [170,0]]
+    features = [[140, 1], [130, 1], [150, 0], [170, 0]]
     # Last column.  Output.
     # [0]:apple.  [1]:orange.
     labels = [0, 0, 1, 1]
@@ -25,19 +25,38 @@ def first_ml_problem():
     print(clf.predict([[150, 0]]))
     print(clf.predict([[120, 0]]))
 
-#first_ml_problem() # [1](orange) [0](apple)
+
+# first_ml_problem() # [1](orange) [0](apple)
+
+
+def first_ml_problem_cars():
+    # [0]: horsepower; [1]: seats.
+    features = [[300, 2], [450, 2], [200, 8], [150, 9]]
+    # [0]: sports-car; [1]: minivan.
+    labels = [0, 0, 1, 1]
+    # Create and fit the Decision Tree classifier.
+    clf = tree.DecisionTreeClassifier()
+    clf = clf.fit(features, labels)
+    # Get result.
+    print(clf.predict([[350, 2]]))
+    print(clf.predict([[350, 5]]))
+    print(clf.predict([[225, 2]]))
+
+
+# first_ml_problem_cars()
+
 
 def visualize_decision_tree():
     iris = load_iris()
 
     # Metadata of dataset:
-    #print(iris.feature_names) # [sl sw pl pw]: length and width of sepal and petal.
-    #print(iris.target_names) # [setosa, versicolor, virginica]
-    
+    # print(iris.feature_names) # [sl sw pl pw]: length and width of sepal and petal.
+    # print(iris.target_names) # [setosa, versicolor, virginica]
+
     # Real values of dataset:
-    #print(iris.data[0]) # Measurements from [0] flower: [5.1 3.5 1.4 0.2]
-    #print(iris.target[0]) # Labels.  Ret: 0 -> satosa
-    
+    # print(iris.data[0]) # Measurements from [0] flower: [5.1 3.5 1.4 0.2]
+    # print(iris.target[0]) # Labels.  Ret: 0 -> satosa
+
     # Create testing dataset to check the trained model on them later.
     test_idx = [0, 50, 100]  # first satosa, first versicolor, first virginica
     # Training data
@@ -58,24 +77,26 @@ def visualize_decision_tree():
     # viz code
     dot_data = StringIO()
     tree.export_graphviz(clf,
-        out_file=dot_data,
-        feature_names=iris.feature_names,
-        class_names=iris.target_names,
-        filled=True,
-        rounded=True,
-        impurity=False)
+                         out_file=dot_data,
+                         feature_names=iris.feature_names,
+                         class_names=iris.target_names,
+                         filled=True,
+                         rounded=True,
+                         impurity=False)
     graph = pydotplus.graph_from_dot_data(dot_data.getvalue())
     graph.write_pdf('iris.pdf')
 
     print(test_data[2], test_target[2])
     print(iris.feature_names, iris.target_names)
-    
-#visualize_decision_tree()
+
+
+# visualize_decision_tree()
+
 
 def dogs_height_distribution():
     # Create a population of 1000 dogs: 50%/50% greyhounds and labradors.
     greyhounds = 500
-    labradors = 500 
+    labradors = 500
     # Give each of them a height.
     grey_height = 28 + 4 + np.random.randn(greyhounds)
     lab_height = 28 + 4 + np.random.randn(labradors)
@@ -90,7 +111,8 @@ def dogs_height_distribution():
     print('Features have to be easy to understand!')
     print('Ideal features are: Informative, Independent, Simple!')
 
-#dogs_height_distribution()
+
+# dogs_height_distribution()
 
 
 def supervised_learning_pipeline():
@@ -98,11 +120,16 @@ def supervised_learning_pipeline():
     # Before production, we have a question: how accurate will it be after
     #   algorithm will encounter data, which is not in training set?
     # What we really want - verify our model is working well before we deploy them.
-    
+
+    # Model == prototype / rules that define the body of our python function F(X)=y.
+    # Learning == using training data to adjust the parameters of the models.
+
+    # playground.tensorflow.org
+
     # 1 approach: partition dataset
     iris = load_iris()
-    X = iris.data
-    y = iris.target
+    X = iris.data  # Features.
+    y = iris.target  # Labels.
     # Partition dataset into training and test sets.
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=.5)
     # Create a classifier.
