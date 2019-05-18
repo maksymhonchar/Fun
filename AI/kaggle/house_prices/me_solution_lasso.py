@@ -7,8 +7,9 @@
 import pandas as pd
 import numpy as np
 
-from sklearn.linear_model import Lasso, Ridge
-from sklearn.model_selection import train_test_split
+from sklearn.linear_model import Lasso, LassoCV, RidgeCV, LinearRegression
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.model_selection import train_test_split, cross_val_score, KFold
 from sklearn.metrics import r2_score, mean_squared_error
 from sklearn.preprocessing import RobustScaler
 
@@ -196,6 +197,64 @@ output.to_csv(
     '/home/max/Documents/learn/learnai/house_prices/submission.csv', index=False)
 
 print(output.head())
+
+#%% Try out different models
+import warnings
+warnings.filterwarnings('ignore')
+
+x_train_raw = train
+y_train_raw = np.exp(train_labels)
+
+ridge_results = cross_val_score(LassoCV(), x_train_raw.values, y_train_raw.values,
+                                cv=5, scoring='neg_mean_squared_error', n_jobs=-1)
+print('RMSE for Ridge regression is {0}\n'.format(
+    np.sqrt(np.abs(ridge_results.mean()))
+))
+print(ridge_results.mean())
+
+
+# lasso_results = cross_val_score(LassoCV(), train.values, y_train, cv=kfold, scoring= 'neg_mean_squared_error')
+# rf_30_results = cross_val_score(RandomForestRegressor(n_estimators=30), train.values, y_train, cv=kfold, scoring= 'neg_mean_squared_error')
+# rf_100_results = cross_val_score(RandomForestRegressor(n_estimators=100), train.values, y_train, cv=kfold, scoring= 'neg_mean_squared_error')
+
+
+#%% Calculate scores: r2 and RMSE
+# _dummy_y = np.exp(y)  # recover train_labels from log state
+# _dummy_y = _dummy_y[:-1]  # to compare with 'preds' with .shape (1459,)
+# print('Scores are: r2: {0}; RMSE: {1}; mean_squared_error={2}'.format(
+#     r2_score(_dummy_y, preds),
+#     np.sqrt(mean_squared_error(_dummy_y, preds)),
+#     mean_squared_error(_dummy_y, preds)
+# ))
+
+results = cross_val_score(LinearRegression(), x_raw, y_raw, cv=kfold)
+# print(results.mean())  # r2 = 0.8022787705561434  (also called the coefficient of determination)
+
+# results = cross_val_score(LinearRegression(), x_raw, y_raw,
+#                           cv=kfold, scoring='neg_mean_squared_error')
+# print(np.sqrt(np.abs(results.mean())))  # 36380.34069016587
+# # RMSE score - root mean square error
+# # RMSE ~= average difference between the predicted values and the actual values.
+
+# ridge_results = cross_val_score(RidgeCV(), x_raw, y_raw,
+#                                 cv=kfold, scoring='neg_mean_squared_error')
+# print('RMSE for Ridge regression is %.3f\n' % np.sqrt(np.abs(ridge_results.mean())))  # 31924.019
+# print(ridge_results.mean())
+
+# lasso_results = cross_val_score(LassoCV(), x_raw, y_raw,
+#                                 cv=kfold, scoring='neg_mean_squared_error')
+# print('RMSE for Lasso regression is %.3f\n' % np.sqrt(np.abs(lasso_results.mean())))  # 43199.478
+# print(lasso_results.mean())
+
+# rf_30_results = cross_val_score(RandomForestRegressor(n_estimators=30), x_raw, y_raw,
+#                                 cv=kfold, scoring='neg_mean_squared_error')
+# print('RMSE for Random Forest regression with 30 trees is %.3f\n' % np.sqrt(np.abs(rf_30_results.mean())))  # 31008.951
+# print(rf_30_results.mean())
+
+# rf_100_results = cross_val_score(RandomForestRegressor(n_estimators=100), x_raw, y_raw,
+#                                  cv=kfold, scoring='neg_mean_squared_error')
+# print('RMSE for Random Forest regression with 100 trees  is %.3f' % np.sqrt(np.abs(rf_100_results.mean())))  # 31237.195
+# print(rf_100_results.mean())
 
 #%% [markdown]
 # results: Top 60% 2,736th of 4593
