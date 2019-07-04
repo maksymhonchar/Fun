@@ -137,6 +137,8 @@ axis_1.set_title('microsoft')
 microsoft_data_trading.plot(ax=axis_1)
 plt.show()
 
+# NOTE: sometimes we tend to be bankrupt!
+
 # Plot the profit data
 fig, [axis_0, axis_1] = plt.subplots(1, 2, figsize=(20, 5))
 axis_0.set_title('facebook')
@@ -153,7 +155,7 @@ axis_1.set_title('microsoft')
 microsoft_data_trading['wealth'].plot(ax=axis_1)
 plt.show()
 
-#%% 
+#%% Print results if we would really buy & sell daily
 def print_money_earned_spent(df, name):
     print(name)
     print('Total money you win: {0}'.format(df.loc[df.index[-2], 'wealth']))
@@ -163,6 +165,7 @@ def print_money_earned_spent(df, name):
 print_money_earned_spent(facebook_data_trading, 'facebook')
 print_money_earned_spent(microsoft_data_trading, 'microsoft')
 
-#%% Questions [markdown]
-# Can we find a better signal for trading?
+#%% [markdown]
+# # Questions
+# Can we find a better signal for trading? <br>
 # How do you evaluate your performance of shared strategy correctly?
