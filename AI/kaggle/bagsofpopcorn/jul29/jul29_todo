@@ -1,0 +1,12 @@
+# todo:
+
+# try out keras NN approaches from other kernels
+# https://www.kaggle.com/amreshtech/imdb-reviews-with-keras-95-58-accuracy
+# https://www.kaggle.com/abhijeet0101/imdb-review-deep-model-93-51-accuracy
+# https://www.kaggle.com/sumitdua10/imdb-text-classification-dropout-comparison
+# https://www.kaggle.com/sumitdua10/imdb-text-classification-ensemble
+# https://www.kaggle.com/shwetabh123/assignementproblem
+
+# check how to use unlabeled data
+# check if unlabeled_set contains values for train_set - opportunity to extend training set!!!
+

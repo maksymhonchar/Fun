@@ -1,0 +1,105 @@
+
+# todo: introduce new class 'Other' VS replace NaN values with mean() of the column?
+#     note: only in cases when there is 1 or 2 missing values 
+#     note: for now, replace missing values in such cases with new class 'Other'
+
+# todo: astype(str) or minmax to some interval? because "5>1" has some meaning in it
+
+# todo: boxcox transformation for highly skewed data
+# https://www.kaggle.com/vjgupta/reach-top-10-with-simple-model-on-housing-prices
+# https://www.kaggle.com/honchardev/stacking-house-prices-walkthrough-to-top-5/edit
+
+# check continuous data in final datasets !
+
+# One-hot
+
+# scalers ! transformations !
+
+# log1p instead of log!
+# log1p: https://stackoverflow.com/questions/49538185/what-is-the-purpose-of-numpy-log1p
+# log1p possible reason: "because log of zero produces an error for x=0"
+# log1p - "The're more accurate for small x. rather than log"
+        # The same principle holds for exp1m() and logaddexp():
+# "Not always the best choice, because as you see you will lose a big curve before x = 0 that is one of the best things about log function"
+
+# LabelEncoder - change so noone has ZEROS! OR use .map 
+
+# Get_dummies
+
+# MLPRegressor
+
+# Work separately with Train and Test sest when EDA!
+
+# Todo: learnig curve for GridSearchCV
+
+# todo: less bins!!! custom binning!!!
+
+# todo: quantiles
+
+"""
+
+hasFrontage ?
+
+Condition:
+        - make 1 feature out of 2
+        - add "hasMultiple" class
+        - todo: reason why we lose info about Condition2 for "hasMultiple" rows
+
+Exterior1st/Exterior2nd: add "multiple" (same as Condition1/2)
+
+YearRemodAdd: add boolean feature (remodelled or not)
+
+hasBasement ?
+
+BsmtFinSF1 ? BsmtFinSF2 ?
+
+hasGarage ?
+
+porch - generalize the features ?
+
+hasPool - ? OR PoolArea = 0 ?
+
+MiscFeature - add hasElev, hassGar2, hasOthrFeature, hasShed, hasTenC
+
+MiscVal - remove. Explanation - ?
+
+"""
+
+# todo: (!) OverallCond MIGHT lead to Overfitting
+
+# todo: fix invalid values (like year>2019 etc)
+
+# pca
+
+
+# todo: qcut разделение, а не .cut
+# todo: 1+p, a не log
+
+# # todo: remove highly correlated features
+
+# todo: # Hyperparameters search : with features removal
+
+# todo: # KFold and LeaveOneOut CV
+
+# todo: feature_importances
+
+# Check out feature importances
+
+def display_features_importances(model, features, display_all=False, display_top_n=20):
+    print(model.__class__.__name__)
+    importances_df = pd.DataFrame({'importance': model.feature_importances_})
+    importances_df['feature'] = features
+    importances_df.sort_values(by='importance', ascending=False, inplace=True)
+    importances_df = importances_df.set_index('feature', drop=True)
+    if display_all:
+        # Display all features
+        importances_df.plot.barh()
+        plt.show()
+    # Display top20 features
+    importances_df_top = importances_df.iloc[:display_top_n, :]
+    importances_df_top.plot.barh()
+    plt.show()
+
+display_features_importances(base_rfr, base_X_train.columns)
+display_features_importances(base_xgb, base_X_train.columns)
+display_features_importances(base_gbr, base_X_train.columns)

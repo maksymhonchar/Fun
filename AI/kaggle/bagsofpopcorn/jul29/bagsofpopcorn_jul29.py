@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[38]:
+# In[74]:
 
 
 # Load libraries
@@ -23,6 +23,7 @@ from scipy import stats
 
 from bs4 import BeautifulSoup
 
+import nltk
 from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
 
@@ -37,9 +38,10 @@ from sklearn.metrics import classification_report, f1_score, accuracy_score
 from sklearn.linear_model import LogisticRegression
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.svm import LinearSVC
 
 
-# In[2]:
+# In[86]:
 
 
 # Load data
@@ -136,14 +138,14 @@ display(
 # Conclusion: reject the hypothesis that the distributions are the same.
 
 
-# In[8]:
+# In[40]:
 
 
 # Clean the data
 
 wnlemmatizer = WordNetLemmatizer()
 
-def clean_review(raw_text, to_lower, lemmatize, remove_numbers, remove_stopwords):
+def clean_review(raw_text, to_lower, lemmatize, remove_numbers, remove_stopwords, return_tokens=False):
     # 1
     text_nohtml = BeautifulSoup(raw_text).get_text()
     # 2
@@ -172,6 +174,8 @@ def clean_review(raw_text, to_lower, lemmatize, remove_numbers, remove_stopwords
         text_tokens = text_lemmatized_tokens
     # 6
     text_cleaned = " ".join(text_tokens)
+    if return_tokens:
+        return text_tokens
     return text_cleaned    
 
 
@@ -553,11 +557,11 @@ def try_customized_textblob():
 # Conclusion: because memory usage is too high for only 1000 rows (out of 25000) - skip this approach
 
 
-# In[33]:
+# In[24]:
 
 
 # Approach 7: try to clean data differently: with/without lowering/lemmatizing/stopwords_removal/
-ч
+
 n_max_features = [100, 250, 500, 750, 1000, 1500, 2000, 2500, 5000, 7500, 10000, 15000]
 accuracy_values = []
 f1_score_values = []
@@ -565,7 +569,7 @@ f1_score_values = []
 train_df['cleaned_review'] = train_df['review'].apply(
     lambda x: clean_review(
         x,
-        to_lower=True, lemmatize=False, remove_numbers=False, remove_stopwords=False
+        to_lower=True, lemmatize=False, remove_numbers=False, remove_stopwords=False  # best combination
     )
 )
 
@@ -593,7 +597,7 @@ plt.show()
 display(max(accuracy_values), max(f1_score_values))
 
 
-# In[46]:
+# In[25]:
 
 
 # Approach 7: try out tfidf vectorizer
@@ -638,30 +642,177 @@ df = pd.DataFrame({"id": test_df['id'],"sentiment": pred})
 df.to_csv('submission.csv', index=False, header=True)
 
 
-# In[45]:
+# In[27]:
 
 
 # Apply transformations to test set and create a prediction
 
-test_df['cleaned_review'] = test_df['review'].apply(
-    lambda x: clean_review(
-        x,
-        to_lower=True, lemmatize=False, remove_numbers=True, remove_stopwords=False
+# test_df['cleaned_review'] = test_df['review'].apply(
+#     lambda x: clean_review(
+#         x,
+#         to_lower=True, lemmatize=False, remove_numbers=True, remove_stopwords=False
+#     )
+# )
+
+# model = LogisticRegression(solver='liblinear')
+# model.fit(
+#     vectorize_df_col(train_df, 'cleaned_review', perform_tfidf=True, cv_max_features=10000),
+#     train_df['sentiment']
+# )
+
+# y_pred = model.predict(
+#     vectorize_df_col(test_df, 'review', perform_tfidf=True, cv_max_features=10000)
+# )
+
+# # Submit predictions
+
+# output = pd.DataFrame(
+#     {'id': test_df['id'], 'sentiment': y_pred}
+# )
+
+# output.to_csv('submission.csv', index=False, quoting=3)
+
+
+# In[28]:
+
+
+# src: https://www.kaggle.com/varun08/sentiment-analysis-using-word2vec
+
+# NOTE: performance of word2vec is much better when applying to big datasets.
+    # In this example, because we are considering only 25,000 training examples, the
+    # performance is similiar to the BOW approach
+
+
+# In[48]:
+
+
+# Create list of lists for word2vec
+
+tokenizer = nltk.data.load('tokenizers/punkt/english.pickle')
+
+def split_clean_review(raw_text, tokenizer, to_lower, lemmatize, remove_numbers, remove_stopwords):
+    raw_sentences = tokenizer.tokenize(raw_text.strip())
+    cleaned_sentences = list()
+    for raw_sentence in raw_sentences:
+        if len(raw_sentence) > 0:
+            cleaned_sentences.append(
+                clean_review(
+                    raw_sentence, return_tokens=True,
+                    to_lower=to_lower, lemmatize=lemmatize, remove_numbers=remove_numbers, remove_stopwords=remove_stopwords
+                )
+            )
+    return cleaned_sentences
+
+
+# In[49]:
+
+
+# Create list of lists for word2vec: list of sentences
+
+sentences = list()
+for review in train_df['review']:
+    sentences += split_clean_review(
+        review, tokenizer,
+        True, False, True, False
     )
-)
-
-model = LogisticRegression(solver='liblinear')
-model.fit(
-    vectorize_df_col(train_df, 'cleaned_review', perform_tfidf=True, cv_max_features=10000),
-    train_df['sentiment']
-)
-
-y_pred = model.predict(
-    vectorize_df_col(test_df, 'review', perform_tfidf=True, cv_max_features=10000)
-)
 
 
-# In[35]:
+# In[50]:
+
+
+display(len(sentences[0]))
+
+display(sentences[0])
+
+
+# In[51]:
+
+
+# Creating the model and setting values for the various parameters
+num_features = 300  # Word vector dimensionality
+min_word_count = 40 # Minimum word count
+num_workers = 4     # Number of parallel threads
+context = 10        # Context window size
+downsampling = 1e-3 # (0.001) Downsample setting for frequent words
+
+# Initializing the train model
+from gensim.models import word2vec
+print("Training model....")
+model = word2vec.Word2Vec(sentences,                          workers=num_workers,                          size=num_features,                          min_count=min_word_count,                          window=context,
+                          sample=downsampling)
+
+# To make the model memory efficient
+model.init_sims(replace=True)
+
+# Saving the model for later use. Can be loaded using Word2Vec.load()
+model_name = "300features_40minwords_10context"
+model.save(model_name)
+
+
+# In[70]:
+
+
+def featureVecMethod(words, model, num_features):
+    """Average all word vectors in a paragraph"""
+    featureVec = np.zeros(num_features, dtype="float32")
+    nwords = 0    
+    index2word_set = set(model.wv.index2word)  # set() for speed purposes
+    for word in  words:
+        if word in index2word_set:
+            nwords = nwords + 1
+            featureVec = np.add(featureVec,model[word])
+    featureVec = np.divide(featureVec, nwords)
+    return featureVec
+
+def getAvgFeatureVecs(reviews, model, num_features):
+    """Calculating the average feature vector"""
+    reviewFeatureVecs = np.zeros((len(reviews),num_features),dtype="float32")
+    for idx, review in enumerate(reviews):
+        if idx%1000 == 0:
+            print(idx)
+        reviewFeatureVecs[idx] = featureVecMethod(review, model, num_features)
+    return reviewFeatureVecs
+
+
+# In[71]:
+
+
+# Get average feature vector for training set
+
+clean_train_reviews = []
+for review in train_df['review']:
+    clean_train_reviews.append(
+        clean_review(review, True, False, True, True)
+    )
+    
+trainDataVecs = getAvgFeatureVecs(clean_train_reviews, model, num_features)
+
+
+# In[72]:
+
+
+# Get average feature vector for test set
+
+clean_test_reviews = []
+for review in test_df['review']:
+    clean_test_reviews.append(
+        clean_review(review, True, False, True, True)
+    )
+    
+testDataVecs = getAvgFeatureVecs(clean_test_reviews, model, num_features)
+
+
+# In[73]:
+
+
+model_rndforest = RandomForestClassifier(n_estimators=100)
+
+model_rndforest = model_rndforest.fit(trainDataVecs, train_df['sentiment'])
+
+y_pred = model_rndforest.predict(testDataVecs)
+
+
+# In[75]:
 
 
 # Submit predictions
@@ -670,21 +821,214 @@ output = pd.DataFrame(
     {'id': test_df['id'], 'sentiment': y_pred}
 )
 
-output.to_csv('submission.csv', index=False, quoting=3)
+output.to_csv('submission.csv', index=False)
 
 
-# In[26]:
+# In[78]:
 
 
-# todo:
+display(test_df.shape)
 
-# try out keras NN approaches from other kernels
-# https://www.kaggle.com/amreshtech/imdb-reviews-with-keras-95-58-accuracy
-# https://www.kaggle.com/abhijeet0101/imdb-review-deep-model-93-51-accuracy
-# https://www.kaggle.com/sumitdua10/imdb-text-classification-dropout-comparison
-# https://www.kaggle.com/sumitdua10/imdb-text-classification-ensemble
-# https://www.kaggle.com/shwetabh123/assignementproblem
+display(y_pred.shape)
 
-# check how to use unlabeled data
-# check if unlabeled_set contains values for train_set - opportunity to extend training set!!!
+display(train_df.head(5))
+display(test_df.head(5))
+
+
+# In[82]:
+
+
+# Try out LinearSVC
+
+stop_words = ['in', 'of', 'at', 'a', 'the']
+
+ngram_vectorizer = CountVectorizer(binary=True, ngram_range=(1, 3), stop_words=stop_words)
+
+ngram_vectorizer.fit(train_df['cleaned_review'])
+
+X = ngram_vectorizer.transform(train_df['cleaned_review'])
+
+X_test = ngram_vectorizer.transform(test_df['cleaned_review'])
+
+
+# In[83]:
+
+
+X_train, X_val, y_train, y_val = train_test_split(
+    X, train_df['sentiment'], train_size = 0.75
+)
+
+for c in [0.001, 0.005, 0.01, 0.05, 0.1]:    
+    svm = LinearSVC(C=c)
+    svm.fit(X_train, y_train)
+    print("Accuracy for C={0}: {1}".format(c, accuracy_score(y_val, svm.predict(X_val))))
+    
+# Accuracy for C=0.001: 0.88544
+# Accuracy for C=0.005: 0.89088
+# Accuracy for C=0.01: 0.88992
+# Accuracy for C=0.05: 0.8896
+# Accuracy for C=0.1: 0.88944
+
+
+# In[84]:
+
+
+# src: https://www.kaggle.com/drscarlat/imdb-sentiment-analysis-keras-and-tensorflow
+
+# Import keras and tensorflow libraries
+
+import tensorflow as tf
+
+from keras import models, regularizers, layers, optimizers, losses, metrics
+from keras.models import Sequential
+from keras.layers import Dense
+from keras.utils import np_utils, to_categorical
+ 
+from keras.datasets import imdb
+
+
+# In[93]:
+
+
+# save np.load
+np_load_old = np.load
+
+# modify the default parameters of np.load
+np.load = lambda *a,**k: np_load_old(*a, allow_pickle=True, **k)
+
+# call load_data with allow_pickle implicitly set to true
+(train_data, train_labels), (test_data, test_labels) = imdb.load_data(num_words=10000)
+
+# restore np.load for future normal usage
+np.load = np_load_old
+
+
+# In[99]:
+
+
+# Vectorize inputs.
+# Encoding the integer sequences into a binary matrix - one hot encoder basically
+# From integers representing words, at various lengths - to a normalized one hot encoded tensor (matrix) of 10k columns
+
+def vectorize_sequences(sequences, dimension=10000):
+    results = np.zeros((len(sequences), dimension))
+    for i, sequence in enumerate(sequences):
+        results[i, sequence] = 1.
+    return results
+
+
+# In[106]:
+
+
+X_train = vectorize_sequences(train_data)
+X_test = vectorize_sequences(test_data)
+
+print("x_train ", X_train.shape, X_train.dtype)
+print("x_test ", X_test.shape, X_train.dtype)
+
+
+# In[107]:
+
+
+y_train = np.asarray(train_labels).astype('float32')
+y_test = np.asarray(test_labels).astype('float32')
+
+print("y_train", y_train.shape, y_train.dtype)
+print("y_test ", y_test.shape, y_train.dtype)
+
+
+# In[110]:
+
+
+X_val = X_train[:10000]
+partial_X_train = X_train[10000:]
+y_val = y_train[:10000]
+partial_y_train = y_train[10000:]
+
+print("x_val ", X_val.shape)
+print("partial_x_train ", partial_X_train.shape)
+print("y_val ", y_val.shape)
+print("partial_y_train ", partial_y_train.shape)
+
+
+# In[111]:
+
+
+# NN model
+
+model = models.Sequential()
+model.add(layers.Dense(
+    16, kernel_regularizer=regularizers.l1(0.001), activation='relu', input_shape=(10000,))
+)
+model.add(layers.Dropout(0.5))
+model.add(layers.Dense(
+    16, kernel_regularizer=regularizers.l1(0.001),activation='relu')
+)
+model.add(layers.Dropout(0.5))
+model.add(layers.Dense(1, activation='sigmoid'))
+
+
+# In[113]:
+
+
+NumEpochs = 10
+BatchSize = 512
+
+model.compile(optimizer='rmsprop', loss='binary_crossentropy', metrics=['acc'])
+
+history = model.fit(
+    partial_X_train, partial_y_train,
+    epochs=NumEpochs, batch_size=BatchSize, validation_data=(X_val, y_val)
+)
+
+results = model.evaluate(X_test, y_test)
+
+print("Test Loss and Accuracy")
+print("results ", results)
+
+history_dict = history.history
+display(history_dict.keys())
+
+
+# In[114]:
+
+
+# Loss curve
+
+plt.clf()
+history_dict = history.history
+loss_values = history_dict['loss']
+val_loss_values = history_dict['val_loss']
+epochs = range(1, (len(history_dict['loss']) + 1))
+plt.plot(epochs, loss_values, 'bo', label='Training loss')
+plt.plot(epochs, val_loss_values, 'b', label='Validation loss')
+plt.title('Training and validation loss')
+plt.xlabel('Epochs')
+plt.ylabel('Loss')
+plt.legend()
+plt.show()
+
+
+# In[115]:
+
+
+# Validation accuracy curve
+
+plt.clf()
+acc_values = history_dict['acc']
+val_acc_values = history_dict['val_acc']
+epochs = range(1, (len(history_dict['acc']) + 1))
+plt.plot(epochs, acc_values, 'bo', label='Training acc')
+plt.plot(epochs, val_acc_values, 'b', label='Validation acc')
+plt.title('Training and validation accuracy')
+plt.xlabel('Epochs')
+plt.ylabel('Accuracy')
+plt.legend()
+plt.show()
+
+
+# In[117]:
+
+
+model.predict(X_test)
 
