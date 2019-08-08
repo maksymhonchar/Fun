@@ -1,0 +1,43 @@
+# Some of big data use-cases
+- web and e-tailing
+    - recommendation engines
+    - ad targeting
+    - search quality
+    - abuse and click fraud detection
+- Telecommunications
+    - customer churn prevention
+    - network performance optimization
+    - calling data record analysis
+    - analyzing network to predict failure
+- Government
+    - fraud detection and cyber security
+    - welfare schemes
+    - justice
+- Healthcare and Life sciences
+    - health information exchange
+    - gene sequencing
+    - serialization
+    - healthcare service quality improvements
+    - drug safety
+- Bank and financial services
+    - modeling true risk
+    - threat analysis
+    - fraud detection
+    - trade surveillance
+    - credit scoring and analysis
+- Retail
+    - point of sales transaction analysis
+    - customer churn analysis
+    - sentiment analysis
+- Transportation services
+    - data from location based social network
+    - high speed data from telecom
+    - transport demand models
+    - route planning
+- Hotels and Food delivery services
+    - customer demands
+    - details of customers
+    - availability and seasonal data changes
+...
+...
+...
