@@ -440,3 +440,8 @@ Device type and, separately, last touch channel appear to have a main effect on 
     - Монета подбрасывается 5 раз
     - Тогда случайная величина X – количество появлений орла - распределена по биномиальному закону
     - Орёл обязательно выпадет или x0=0, x1=1, x2=2, x3=3, x4=4 или х5=5 раз.
+
+# Exact test (точный тест)
+- In statistics, an exact (significance) test is a test where if the Null hypotheses is true then all assumptions, upon which the derivation of the distribution of the test statistic is based, are met
+- Using exact test you can actually get an exact p-value
+- Одним из первых примеров пермутационного статистического критерия является точный тест Фишера, применяющийся в анализе таблиц сопряжённости для выборок маленьких размеров.

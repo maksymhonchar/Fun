@@ -1,19 +1,21 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[3]:
+# In[1]:
 
 
 # src: https://www.kaggle.com/c/sf-crime
 
 
-# In[4]:
+# In[2]:
 
 
 # cool yandex vid: https://www.youtube.com/watch?v=ttVhB8ET5M8
+# cool paper: https://arxiv.org/pdf/1607.03626.pdf
+# cool paper[2]: https://pdfs.semanticscholar.org/962c/019196d5901bd6cf4826cec1c075ab3de5ee.pdf
 
 
-# In[5]:
+# In[3]:
 
 
 # From kaggle 'Data Description' section:
@@ -40,7 +42,7 @@
 # Y - Latitude
 
 
-# In[6]:
+# In[4]:
 
 
 # Load libraries
@@ -74,7 +76,7 @@ from sklearn.ensemble import RandomForestClassifier
 from xgboost import XGBClassifier
 
 
-# In[7]:
+# In[5]:
 
 
 # Load the data
@@ -88,7 +90,7 @@ raw_test_df = pd.read_csv(TEST_DF_PATH, header=0)
 raw_concat_traintest_df = pd.concat([raw_train_df, raw_test_df], ignore_index=True, sort=False)
 
 
-# In[8]:
+# In[6]:
 
 
 def overview_df(dataset_df):
@@ -104,7 +106,7 @@ def overview_df(dataset_df):
     display(dataset_df.isnull().sum())
 
 
-# In[10]:
+# In[7]:
 
 
 overview_df(raw_train_df)
@@ -114,7 +116,7 @@ overview_df(raw_test_df)
 overview_df(raw_concat_traintest_df)
 
 
-# In[12]:
+# In[8]:
 
 
 # Overview rows with unusual Longtitude and Latitude
@@ -159,7 +161,7 @@ def overview_col_name_occurences_fulldf_subsetdf(full_dataset_df, subset_df, col
 #             display(occurences)
 
 
-# In[14]:
+# In[9]:
 
 
 overview_invalid_long_lat(raw_train_df)
@@ -184,7 +186,7 @@ overview_col_name_occurences_fulldf_subsetdf(
 display('-')
 
 
-# In[9]:
+# In[10]:
 
 
 # Plot concatenated coordinates
@@ -200,7 +202,7 @@ plt.show()
 # Plot coordinates separately from train/test sets
 train_no_invalid = raw_train_df[ raw_train_df['Y'] != 90.0 ]
 test_no_invalid = raw_test_df[ raw_test_df['Y'] != 90.0 ]
-fig = plt.figure(figsize=(10, 10))
+fig = plt.figure(figsize=(20, 20))
 plt.scatter(
     x=train_no_invalid['X'], y=train_no_invalid['Y'],
     s=10, marker='v', alpha=0.2
@@ -212,7 +214,7 @@ plt.scatter(
 plt.show()
 
 
-# In[10]:
+# In[11]:
 
 
 # Generate geographical heatmaps
@@ -239,7 +241,7 @@ test_gmap_html_iframe = IPython.display.IFrame(src='test_50k_rows_heatmap.html',
 display(test_gmap_html_iframe)
 
 
-# In[11]:
+# In[12]:
 
 
 # Note: in train and test datasets, X and Y coordinates are almost the same
@@ -267,16 +269,286 @@ display( kstest(train_no_invalid['X'], 'norm') )  # p=0
 display( kstest(test_no_invalid['Y'], 'norm') )  # p=0
 
 
-# In[12]:
-
-
-# Intermediate DFs
-
-fixdcoord_train_df = raw_train_df.copy()
-fixdcoord_test_df = raw_test_df.copy()
-
-
 # In[13]:
+
+
+# Explore 'Dates' feature
+
+def hist_by_groupby_valuecounts(dataset_df, col_name_to_groupby):
+    col_valuecounts = dataset_df.groupby(by=col_name_to_groupby).size()
+    plt.bar(col_valuecounts.index, col_valuecounts); plt.show()
+
+
+# In[14]:
+
+
+# Intermediate arrays: exploring 'Dates' feature
+
+train_eda_dates = raw_train_df.copy()
+train_eda_dates['Dates'] = pd.to_datetime(train_eda_dates['Dates'])
+
+test_eda_dates = raw_test_df.copy()
+test_eda_dates['Dates'] = pd.to_datetime(test_eda_dates['Dates'])
+
+
+# In[15]:
+
+
+# 1. Hours
+
+# Conclusion: 'Hour' looks like a good feature
+
+# Training set
+train_eda_dates['Hour'] = train_eda_dates['Dates'].dt.hour
+
+hist_by_groupby_valuecounts(train_eda_dates, 'Hour')
+
+# Test set
+test_eda_dates['Hour'] = test_eda_dates['Dates'].dt.hour
+
+hist_by_groupby_valuecounts(test_eda_dates, 'Hour')
+
+
+# In[16]:
+
+
+# 2. Minutes
+
+# Note: Minutes are rigged because of lot of 0, 15, 30, 45, 60 values in reports -
+# this might be because to human factor.
+
+# Conclusion: don't use 'Minutes' as a feature
+
+# Training set
+train_eda_dates['Minutes'] = train_eda_dates['Dates'].dt.minute
+
+hist_by_groupby_valuecounts(train_eda_dates, 'Minutes')
+
+# Test set
+test_eda_dates['Minutes'] = test_eda_dates['Dates'].dt.minute
+
+hist_by_groupby_valuecounts(test_eda_dates, 'Minutes')
+
+
+# In[17]:
+
+
+# 3. Month
+
+# Conclusion: try out Month as a feature
+
+# Training set
+train_eda_dates['Month'] = train_eda_dates['Dates'].dt.month
+
+hist_by_groupby_valuecounts(train_eda_dates, 'Month')
+
+# Test set
+test_eda_dates['Month'] = test_eda_dates['Dates'].dt.month
+
+hist_by_groupby_valuecounts(test_eda_dates, 'Month')
+
+
+# In[18]:
+
+
+# 4. Year
+
+# Conclusion: try out Year as a feature in baseline model
+
+train_eda_dates['Dates'].dt.year.hist(bins=13); plt.show()
+
+test_eda_dates['Dates'].dt.year.hist(bins=13); plt.show()
+
+
+# In[19]:
+
+
+# 5. Day of the week
+
+# Note: feature 'DayOfWeek' already exists in both training and test sets as a str.
+# Try to replace it with a numerical value.
+
+# Conclusion: 
+# Try out IsWednesday/IsFriday/IsSaturday features (highest crime rate)
+# Tru out IsSunday feature (lowest crime rate) 
+
+train_eda_dates['Dates'].dt.dayofweek.hist(bins=7); plt.show()
+
+test_eda_dates['Dates'].dt.dayofweek.hist(bins=7); plt.show()
+
+
+# In[20]:
+
+
+# 6. Week of year
+
+# Note: test_eda_dates : last week of year has a spike while train_eda_dates does not
+
+# Conclusion: might be a feature, try it out
+
+display(
+    len(
+        pd.unique(train_eda_dates['Dates'].dt.weekofyear)
+    )
+)
+
+train_eda_dates['Dates'].dt.weekofyear.hist(bins=26); plt.show()
+
+test_eda_dates['Dates'].dt.weekofyear.hist(bins=26); plt.show()
+
+
+# In[39]:
+
+
+# 7. quantile cuts: which hours represent biggest crime rate - weird results for now, can't understand it
+
+train_hour_valuecnts = train_eda_dates['Hour'].value_counts()
+
+display(train_hour_valuecnts.sort_values())
+
+# plt.bar(
+#     train_hour_valuecnts.index, train_hour_valuecnts
+# )
+# plt.show()
+
+plt.bar(
+    train_hour_valuecnts, train_hour_valuecnts.index
+)
+plt.show()
+
+display(
+    pd.qcut(train_hour_valuecnts, 3, retbins=True)[1]
+)
+
+
+# In[21]:
+
+
+# Cleanup for train/test _eda_dates dataframes
+
+# del train_eda_dates
+# del test_eda_dates
+
+
+# In[22]:
+
+
+# Explore 'Category' feature from the raw_train_df
+
+# Note the skewness of the distribution of different crime types
+
+raw_train_df.groupby(by='Category').size().sort_values()
+
+
+# In[23]:
+
+
+# Explore 'Descript' feature from the raw_train_df
+
+# This feature might be helpful when creating features 
+# related to "how well police behaved in a X district" => how bad district (?)
+
+# Conclusion: because this feature is not in the test set, drop it when creating baseline model.
+
+display(
+    raw_train_df[ ['Descript', 'Category'] ].sample(20)
+)
+
+
+# In[24]:
+
+
+# Explore 'PdDistrict' feature
+
+# Conclusion: 'PdDistrict' should be a good feature - definitely use it in modelling
+
+# Training and Test sets
+fig, [ax_0, ax_1] = plt.subplots(1, 2, figsize=(20, 5))
+raw_train_df['PdDistrict'].sort_values().hist(bins=10, ax=ax_0)
+plt.xticks(rotation=90)
+raw_test_df['PdDistrict'].sort_values().hist(bins=10, ax=ax_1)
+plt.xticks(rotation=90)
+plt.show()
+
+
+# In[25]:
+
+
+# Explore 'Resolution' feature
+
+# It is weird that there are so many rows with 'Resolution'='NONE' (526790 rows)
+
+# We might drop this feature or use it to identify some district as good/bad,
+# i.e. lots of arrests & cited - good one; lots of arrests & booked - bad one
+# OR
+# 'NONE' might (or not) event represent false call
+
+for district_name, district_entries in raw_train_df.groupby(by='PdDistrict'):
+    resolutions_in_district = district_entries.groupby(by='Resolution').size()
+#     display(
+#         resolutions_in_district.sum() -
+#         resolutions_in_district[ resolutions_in_district > 1000 ].sum()  # losing 3k-5k elements
+#     )
+    resolutions_in_district = resolutions_in_district[ resolutions_in_district > 1000 ]
+    plt.pie(
+        resolutions_in_district, labels=resolutions_in_district.index,
+        autopct='%1.1f%%', startangle=90
+    )
+    plt.title(district_name)
+    plt.show()
+    
+display(
+    raw_train_df.groupby(by='Resolution').size().sort_values()
+)
+
+display(
+    raw_train_df[ ['Resolution', 'Category', 'PdDistrict'] ].sample(20)
+)
+
+
+# In[26]:
+
+
+# Explore 'Address' feature
+
+# Note: almost alll top Addresses by crime rate have 'Block' in their description.
+# Note: intersections also identify top addresses by crime rate
+
+# Conclusion: transform 'Address' into 'IsBlock' and 'IsIntersection'
+
+# Note: 800 Block of BRYANT ST has top crime rate in train and test set
+
+# Conclusion: add 'Is BryantSt800Blk' feature
+
+display(
+    len(raw_train_df['Address'].unique()), len(raw_test_df['Address'].unique())
+)
+
+display(
+    raw_train_df['Address'].value_counts().head(3),
+    raw_train_df['Address'].value_counts().tail(3)
+)
+display(
+    raw_test_df['Address'].value_counts().head(3),
+    raw_test_df['Address'].value_counts().tail(3),
+)
+
+
+# In[27]:
+
+
+# Intermediate DF for fixing features
+
+fixd_train_df = raw_train_df.copy()
+
+fixd_test_df = raw_test_df.copy()
+
+display(
+    fixd_train_df.size, fixd_test_df.size
+)
+
+
+# In[28]:
 
 
 # Fix rows with unusual Longtitude and Latitude == fix ['X', 'Y'] features values
@@ -286,10 +558,10 @@ fixdcoord_test_df = raw_test_df.copy()
 
 train_invalid_rows = raw_train_df[ raw_train_df['Y'] == 90.0 ]
 test_invalid_rows = raw_test_df[ raw_test_df['Y'] == 90.0 ]
-concat_no_invalid_rows = raw_concat_traintest_df[ raw_concat_traintest_df['Y'] != 90.0 ]
 
 def _ugly_fix_invalid_coords_inplace(invalid_rows_df, tofix_df):
     """note: used global variable concat_no_invalid_rows"""
+    concat_no_invalid_rows = raw_concat_traintest_df[ raw_concat_traintest_df['Y'] != 90.0 ]
     for row_idx, row in invalid_rows_df.iterrows():
         addr_occurences_in_concat = concat_no_invalid_rows[
             concat_no_invalid_rows['Address'] == row['Address']
@@ -300,8 +572,8 @@ def _ugly_fix_invalid_coords_inplace(invalid_rows_df, tofix_df):
             # Fix latitude
             tofix_df.iloc[row_idx, tofix_df.columns.get_loc('Y')] = addr_occurences_in_concat['Y'].iloc[0]
 
-_ugly_fix_invalid_coords_inplace(train_invalid_rows, fixdcoord_train_df)  # 67 invalid rows -> 61 invalid rows
-_ugly_fix_invalid_coords_inplace(test_invalid_rows, fixdcoord_test_df)  # 76 invalid rows -> 65 invalid rows
+_ugly_fix_invalid_coords_inplace(train_invalid_rows, fixd_train_df)  # 67 invalid rows -> 61 invalid rows
+_ugly_fix_invalid_coords_inplace(test_invalid_rows, fixd_test_df)  # 76 invalid rows -> 65 invalid rows
 
 # Otherwise: replace with most common value.
 
@@ -309,31 +581,34 @@ def _ugly_fix_invalid_coords_inplace_2(tofix_df):
     tofix_df.loc[ tofix_df['Y'] == 90.0, 'X' ] = tofix_df['X'].mode()[0]  # note: because we use 'Y'=90, do X first
     tofix_df.loc[ tofix_df['Y'] == 90.0, 'Y' ] = tofix_df['Y'].mode()[0]
 
-_ugly_fix_invalid_coords_inplace_2(fixdcoord_train_df)
-_ugly_fix_invalid_coords_inplace_2(fixdcoord_test_df)
+_ugly_fix_invalid_coords_inplace_2(fixd_train_df)
+_ugly_fix_invalid_coords_inplace_2(fixd_test_df)
 
 
-# In[14]:
+# In[29]:
 
 
-overview_invalid_long_lat(fixdcoord_train_df)  # should be 0
+overview_invalid_long_lat(fixd_train_df)  # should be 0
 
-overview_invalid_long_lat(fixdcoord_test_df)  # should be 0
-
-
-# In[26]:
+overview_invalid_long_lat(fixd_test_df)  # should be 0
 
 
-# Intermediate DFs
-
-timefeatures_train_df = fixdcoord_train_df.copy()
-timefeatures_test_df = fixdcoord_test_df.copy()
+# In[64]:
 
 
-# In[27]:
+# Intermediate array for performing feature engineering / features dropping
+
+feateng_train_df = fixd_train_df.copy()
+
+feateng_test_df = fixd_test_df.copy()
+
+# Cleanup old intermediate DFs
+# del fixd_train_df
+# del fixd_test_df
 
 
-# Note: Minute is irrelevant because of lot of 0, 15, 30, 45, 60 values in reports - this might be a human mistake
+# In[65]:
+
 
 def date_col_to_datetime_inplace(dataset_df, date_col_name='Dates'):
     dataset_df[date_col_name] = pd.to_datetime(dataset_df[date_col_name])
@@ -342,10 +617,14 @@ def date_col_to_datetime_inplace(dataset_df, date_col_name='Dates'):
 def add_date_features_inplace(dataset_df, date_col_name='Dates'):
     # Time
     dataset_df['Hour'] = dataset_df[date_col_name].dt.hour
-    dataset_df['IsNight'] = 0
-    dataset_df.loc[ (dataset_df['Hour'] >= 0) & (dataset_df['Hour'] < 6), 'IsNight' ] = 1
-    dataset_df['IsMorning'] = 0
-    dataset_df.loc[ (dataset_df['Hour'] >= 6) & (dataset_df['Hour'] < 12), 'IsMorning' ] = 1
+    dataset_df['IsQuietTime'] = 0
+    dataset_df.loc[ (dataset_df['Hour'] >= 1) & (dataset_df['Hour'] <= 6), 'IsQuietTime' ] = 1
+    dataset_df['IsDangerousTime'] = 0
+    dataset_df.loc[ (dataset_df['Hour'] >= 15) & (dataset_df['Hour'] <= 19), 'IsDangerousTime' ] = 1
+    dataset_df['IsMidnight'] = 0
+    dataset_df.loc[ (dataset_df['Hour'] == 0), 'IsMidnight' ] = 1
+    dataset_df['IsLunchTime'] = 0
+    dataset_df.loc[ (dataset_df['Hour'] == 12), 'IsLunchTime' ] = 1
     # Date: general
     dataset_df['Day'] = dataset_df[date_col_name].dt.day
     dataset_df['Month'] = dataset_df[date_col_name].dt.month
@@ -364,26 +643,148 @@ def add_date_features_inplace(dataset_df, date_col_name='Dates'):
     dataset_df.loc[ dataset_df['DayOfWeek'] == 6, 'IsSunday' ] = 1
 
 
-# In[28]:
+# In[66]:
 
 
-date_col_to_datetime_inplace(timefeatures_train_df)
-# display(timefeatures_train_df.dtypes)  # Dates: datetime64[ns]
+date_col_to_datetime_inplace(feateng_train_df)
+# display(feateng_train_df.dtypes)  # Dates: datetime64[ns]
 
-date_col_to_datetime_inplace(timefeatures_test_df)
-# display(timefeatures_test_df.dtypes)  # Dates: datetime64[ns]
-
-
-# In[29]:
+date_col_to_datetime_inplace(feateng_test_df)
+# display(feateng_test_df.dtypes)  # Dates: datetime64[ns]
 
 
-add_date_features_inplace(timefeatures_train_df)
+# In[67]:
 
-add_date_features_inplace(timefeatures_test_df)
+
+add_date_features_inplace(feateng_train_df)
+
+add_date_features_inplace(feateng_test_df)
+
+
+# In[76]:
+
+
+# Explore newly created features
+
+display(
+    "IsQuietTime", feateng_train_df['IsQuietTime'].value_counts()
+)
+
+display(
+    "IsDangerousTime", feateng_train_df['IsDangerousTime'].value_counts()  # might be a bad one
+)
+
+display(
+    "IsMidnight", feateng_train_df['IsMidnight'].value_counts()
+)
+
+display(
+    "IsLunchTime", feateng_train_df['IsLunchTime'].value_counts()
+)
+
+display(
+    "IsWeekend", feateng_train_df['IsWeekend'].value_counts()
+)
+
+display(
+    "IsMiddleOfWeek", feateng_train_df['IsMiddleOfWeek'].value_counts()
+)
+
+display(
+    "IsFriday", feateng_train_df['IsFriday'].value_counts()
+)
+
+display(
+    "IsSunday", feateng_train_df['IsSunday'].value_counts()
+)
+
+
+# In[ ]:
+
+
+def add_address_features_inplace(dataset_df, addr_col_name='Address'):
+    dataset_df['IsBlock'] = 0
+    
+    dataset_df['IsIntersection'] = 0
+    
+    dataset_df['IsBryantSt800Blk'] = 0
+    
+display(
+    
+)
+
+
+# In[ ]:
+
+
+
+
+
+# In[ ]:
+
+
+
+
+
+# In[ ]:
+
+
+# Intermediate DFs : dropping features
+
+dropfeat_train_df = feateng_train_df.copy()
+dropfeat_test_df = feateng_test_df.copy()
+
+# Cleanup
+# del feateng_train_df
+# del feateng_test_df
+
+
+# In[ ]:
+
+
+dropfeat_train_df = dropfeat_train_df.drop([''], axis=1)
+
+dropfeat_test_df
+
+
+# In[ ]:
+
+
+# Intermediate DFs for baseline model
+
+baseline_train_df = dropfeat_train_df.copy()
+baseline_test_df = dropfeat_test_df.copy()
+
+# Cleanup old intermediate DFs
+# del feateng_train_df
+# del feateng_test_df
+
+
+# In[ ]:
+
+
+
+
+
+# In[ ]:
+
+
+
+
+
+# In[ ]:
+
+
+
 
 
 # In[30]:
 
+
+# todo: review as histograms columns which you didn't before
+
+
+# todo: qcut for hour to check if IsRush/IsQuiet time are worth it
 
 # timefeatures_train_df['Hour'].hist(bins=24); plt.show()
 # timefeatures_test_df['Hour'].hist(bins=24); plt.show()
@@ -396,6 +797,8 @@ add_date_features_inplace(timefeatures_test_df)
 
 # timefeatures_train_df['Month'].hist(bins=12); plt.show()
 # timefeatures_test_df['Month'].hist(bins=12); plt.show()
+
+# todo: isWinter
 
 # # Note: 2014 - small amount of reported crimes
 # timefeatures_train_df['Year'].hist(bins=13); plt.show()
@@ -418,6 +821,24 @@ add_date_features_inplace(timefeatures_test_df)
 
 # timefeatures_train_df['IsSunday'].hist(bins=2); plt.show()
 # timefeatures_test_df['IsSunday'].hist(bins=2); plt.show()
+
+
+# In[ ]:
+
+
+
+
+
+# In[ ]:
+
+
+
+
+
+# In[ ]:
+
+
+
 
 
 # In[47]:
@@ -555,4 +976,10 @@ display(accuracy_score(y_val, y_pred))
 
 
 # todo: https://www.youtube.com/watch?v=ttVhB8ET5M8
+
+
+# In[ ]:
+
+
+# todo: apply Prophet to identify SEASONAL patterns!!!
 

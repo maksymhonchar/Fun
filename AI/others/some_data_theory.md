@@ -208,3 +208,34 @@
         - The Python implementation exists only in the development version of Sklearn.
         - Visualizing results is complicated.
         - If not correctly optimized, training time can be very long and computationally expensive.
+
+# Как бы вы могли наиболее эффективно представить данные с пятью измерениями?
+    - Нам надо работать с 1д, или 2д, или 3д визуализациями
+    - Можно выбрать лучшие измерения - которые лучше всего объясняют наши данные
+    - Если данные находятся в одном рендже - можно рисовать их разными формами - кружками или квадратами
+    - Если существуют категор и непрер данные - можно цветами обозначить различные категории 
+    - PCA для визуализации. Правда, тогда мы не будем знать что точно означают наши координаты
+    - Параллельные координаты
+    - Glyphplot
+    - Andrew's plot
+    - Arc diagram
+    - distplot - как соотносятся на гистограмме или точечном графике данные друг с другом
+
+# Sparse data
+- Sparse matrices come up in encoding schemes used in the preparation of data.
+- Three common examples include:
+    - One-hot encoding, used to represent categorical data as sparse binary vectors.
+    - Count encoding, used to represent the frequency of words in a vocabulary for a document
+    - TF-IDF encoding, used to represent normalized word frequency scores in a vocabulary.
+
+- use numpy sparse matrices
+
+- There are multiple data structures that can be used to efficiently construct a sparse matrix
+- Three common examples are listed below.
+    - Dictionary of Keys. A dictionary is used where a row and column index is mapped to a value.
+    - List of Lists. Each row of the matrix is stored as a list, with each sublist containing the column index and the value.
+    - Coordinate List. A list of tuples is stored with each tuple containing the row index, column index, and the value.
+
+- There are also data structures that are more suitable for performing efficient operations:
+    - Compressed Sparse Row. The sparse matrix is represented using three one-dimensional arrays for the non-zero values, the extents of the rows, and the column indexes.
+    - Compressed Sparse Column. The same as the Compressed Sparse Row method except the column indices are compressed and read first before the row indices.
