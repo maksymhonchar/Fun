@@ -1,0 +1,65 @@
+src: https://support.rackspace.com/how-to/installing-mysql-server-on-ubuntu/
+
+# SETUP
+sudo apt-get update
+sudo apt-get install mysql-server
+sudo mysql_secure_installation	(initial security config)
+sudo ufw allow mysql	(allow remote access)
+systemctl start mysql	(start the MySQL service)
+systemctl enable mysql	(enable launching at reboot)
+
+# LOG IN TO MYSQL
+mysql -u root -p	(enter as the root user)
+
+# MySQL CLI COMMANDS
+show databases;
+show tables;
+show table status from database_name;
+use database_name;
+describe database_name;
+
+# READ
+SELECT User, Host, authentication_string FROM mysql.user
+
+# CREATE A DATABASE
+CREATE DATABASE database_name;
+
+# CREATE A TABLE
+CREATE TABLE [IF NOT EXISTS] table_name(
+    column_name INT AUTO_INCREMENT,
+    ...,
+    column_list,
+    ....,
+    PRIMARY KEY (column_name)
+) ENGINE=storage_engine
+
+# ADD A DATABASE USER
+INSERT INTO mysql.user (User,Host,authentication_string,ssl_cipher,x509_issuer,x509_subject)
+VALUES('database_user_name','localhost',PASSWORD('database_user_password'),'','','');
+FLUSH PRIVILEGES;
+
+# GRANT DATABASE USER PERMISSIONS
+GRANT ALL PRIVILEGES ON demodb.* to demouser@localhost;
+FLUSH PRIVILEGES;
+SHOW GRANTS FOR 'demouser'@'localhost';
+
+# DROP USER
+DROP USER 'jeffrey'@'localhost';
+
+# SET root PASSWORD
+## WAY1
+sudo mysql
+ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'root'; (change root password to 'root')
+## WAY2
+UPDATE mysql.user SET authentication_string = PASSWORD('rootpass') WHERE User = 'root';
+FLUSH PRIVILEGES;
+
+# DATABASE VS DATABASE SERVER
+There is a difference between a database server and a database, even though those terms are often used interchangeably.
+MySQL is a database server, meaning it tracks databases and controls access to them.
+The database stores the data, and it is the database that applications are trying to access when they interact with MySQL.
+
+# MySQL CONFIGURATION FILES
+location: /etc/mysql
+
+

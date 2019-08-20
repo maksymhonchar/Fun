@@ -1,0 +1,26 @@
+# INSTALL POSTGRES ON YOUR MACHINE
+sudo apt update
+sudo apt install postgresql postgresql-contrib
+
+# SWITCH TO postgres
+sudo -i -u postgres -> psql
+OR
+sudo -u postgres psql
+
+# PostgreSQL COMMANDS
+\q		(exit the PostgreSQL prompt)
+\du[+]		(list all user accounts)
+\conninfo
+\d		(view tables)
+\dt		(view table without the sequence)
+
+# CREATE A NEW ROLE
+sudo -u postgres createuser --interactive
+OR if already switched to postgres:	
+createuser --interactive
+
+# CREATE A NEW DATABASE
+sudo -u postgres createdb demodb
+OR
+createdb demodb 	when logged as postgres:
+
