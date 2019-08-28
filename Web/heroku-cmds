@@ -1,0 +1,27 @@
+heroku login
+
+heroku apps
+
+heroku keys:add
+heroku keys
+
+heroku create appname-pro --region eu
+heroku create appname-stage --region eu
+
+git remote add pro git@heroku.com:appname-pro.git
+git remote add stage git@heroku.com:appname-stage.git
+
+git push stage master
+git push pro master
+
+heroku logs --tail --app app_name
+
+heroku config --app app_name     (view application config)
+
+heroku addons:create heroku-postgresql:hobby-dev --app app_name      (add postgres hobby-dev to application)
+
+heroku run <command with args> --app app_name
+
+heroku pg:psql --app app_name
+
+heroku run bash --app app_name
