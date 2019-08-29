@@ -239,3 +239,29 @@
 - There are also data structures that are more suitable for performing efficient operations:
     - Compressed Sparse Row. The sparse matrix is represented using three one-dimensional arrays for the non-zero values, the extents of the rows, and the column indexes.
     - Compressed Sparse Column. The same as the Compressed Sparse Row method except the column indices are compressed and read first before the row indices.
+
+# Bernoulli & Multinomial Naive Bayes for Text Classification problems - Comparison
+- src: http://www.inf.ed.ac.uk/teaching/courses/inf2b/learnnotes/inf2b-learn-note07-2up.pdf
+
+- Short 'about':
+    - Bernoulli document model: a document is represented by a binary feature vector, whose elements indicate absence or presence of corresponding word in the document.
+    - Multinomial document model: a document is represented by an integer feature vector, whose elements indicate frequency of corresponding word in the document.
+
+- Similarities:
+    - The Bernoulli and the multinomial document models are both based on a bag of words
+- Differences:
+    - Underlying model of text:
+        - **Bernoulli**: a document can be thought of as being generated from a multidimensional Bernoulli distribution: the probability of a word being present can be though of as a (weighted) coin flip with probability P(w_t | C)
+        - **Multinomial**: a document is formed by drawing words from a multinomial distribution: you can think of obtaining the next word in the document by rolling a (weighted) |V|-sided dice with probabilities P(w_t | C)
+    - Document representation:
+        - **Bernoulli**: binary vector, elements indicating presence or absence of a word
+        - **Multinomial**: integer vector, elements indicating frequency of occurance of a word in sentence
+    - Multiple occurences of words:
+        - **Bernoulli**: ignored
+        - **Multinomial**: taken into account
+    - Behaviour with document length:
+        - **Bernoulli**: BEST for SHORT documents
+        - **Multinomial**: longer documents are OK
+    - Behaviour with "the":
+        - **Bernoulli**: since "the" is present in almost every document, P("the" | C) ~ 1.0
+        - **Multinomial**: since probabilities are based on relative frequencies of word occurence in a class, P("the" | C) ~ 0.05
