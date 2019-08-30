@@ -265,3 +265,52 @@
     - Behaviour with "the":
         - **Bernoulli**: since "the" is present in almost every document, P("the" | C) ~ 1.0
         - **Multinomial**: since probabilities are based on relative frequencies of word occurence in a class, P("the" | C) ~ 0.05
+
+# CART vs C4.5 vs ID3
+- CART supports numerical target variables (regression)
+- CART doesn't compute rule sets
+- CART constructs binary trees using the feature and threshold that yield the largest information gain at each node.
+
+- src: https://www.quora.com/What-are-the-differences-between-ID3-C4-5-and-CART
+
+- ID3, or Iternative Dichotomizer
+    - the first of three Decision Tree implementations developed by Ross Quinlan
+    - Shannon Entropy to pick features with the greatest information gain as nodes
+    - It builds a decision tree for the given data in a top-down fashion, starting from a set of objects and a specification of properties Resources and Information.
+    - Each node of the tree, one property is tested based on **maximizing information gain and minimizing entropy**, and the results are used to split the object set
+    - This process is recursively done until the set in a given sub-tree is homogeneous
+    - The ID3 algorithm uses a greedy search.
+    - It selects a test using the information gain criterion, and then never explores the 
+    possibility of alternate choices.
+- **Disadvantages**:
+    - Data may be over-fitted or over-classified, if a small sample is tested.
+    - Only one attribute at a time is tested for making a decision.
+    - Does not handle numeric attributes and missing values.
+
+- CART
+    - Classification and Regression Trees
+    - Constructs binary trees
+    - CART uses Gini Impurity instead
+    - The splits are selected using the twoing criteria and the obtained tree is pruned by cost–complexity Pruning
+    - CART can handle both numeric and categorical variables and it can easily handle outliers.
+- **Disadvantages**:
+    - It can split on only one variable
+    - Trees formed may be unstable
+
+- C4.5
+    - Improved version on ID 3 by Quinlan's
+    - Shannon Entropy to pick features with the greatest information gain as nodes
+    - The new features (vs ID3) are:
+        - (i) accepts both continuous and discrete features;
+        - (ii) handles incomplete data points;
+        - (iii) solves over-fitting problem by (very clever) bottom-up technique usually known as "pruning";
+        - (iv) different weights can be applied the features that comprise the training data.
+- **Disadvantages**:
+    - C4.5 constructs empty branches with zero values
+    - Over fitting happens when algorithm model picks up data with uncommon characteristics , especially when data is noisy.
+
+
+
+
+
+
