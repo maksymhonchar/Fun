@@ -1,0 +1,7 @@
+SUM(train[Column])/calculate(COUNTA(train[Crime]) , all(train))
+
+SUM(train[Column]) / calculate(COUNTA(train[PdDistrict])
+
+DIVIDE( SUM('Table 1'[GDP (Bln USD)] ), CALCULATE( SUM('Table 1'[GDP (Bln USD)]), ALLSELECTED(('Table 1')) ) )
+
+just select "as % from grand total"
