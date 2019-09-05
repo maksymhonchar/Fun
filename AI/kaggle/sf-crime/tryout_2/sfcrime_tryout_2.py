@@ -693,7 +693,7 @@ xgb_params = {
 print('training...')
 xgb_model = xgb.train( xgb_params, xgb_train_data, num_boost_round=100)
 
-pickle_save_model('top1_xgb.model', lgb_model)
+pickle_save_model('top1_xgb.model', xgb_model)
 
 print('predicting xgb...')
 xgb_y_pred = xgb_model.predict( xgb_test_data )
@@ -704,15 +704,17 @@ top1_lgb_model = pickle_load_model('top1_lgb.model')
 # Make a prediction for top1 lgb model
 
 print('predicting lgb...')
-lgb_y_pred = lgb_model.predict( test_df )
+lgb_y_pred = top1_lgb_model.predict( test_df )
 
 # Make a final blended prediction
 
 concat_y_pred = (lgb_y_pred + xgb_y_pred) / 2
 
-create_submission_csv('approach1_submission.csv')
+create_submission_csv('approach2_submission.csv', concat_y_pred)
 
 print('Approach 2: done')
+
+# Kaggle logloss result: 2.26939
 
 
 # In[ ]:
