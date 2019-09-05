@@ -10,14 +10,6 @@
 # In[2]:
 
 
-# cool yandex vid: https://www.youtube.com/watch?v=ttVhB8ET5M8
-# cool paper: https://arxiv.org/pdf/1607.03626.pdf
-# cool paper[2]: https://pdfs.semanticscholar.org/962c/019196d5901bd6cf4826cec1c075ab3de5ee.pdf
-
-
-# In[3]:
-
-
 # From kaggle 'Data Description' section:
     
 # This dataset contains incidents derived from SFPD Crime
@@ -42,7 +34,7 @@
 # Y - Latitude
 
 
-# In[4]:
+# In[3]:
 
 
 # Load libraries
@@ -51,7 +43,6 @@ import IPython
 
 import matplotlib
 get_ipython().run_line_magic('matplotlib', 'inline')
-matplotlib.rcParams['figure.figsize'] = [10.0, 10.0]
 import matplotlib.pyplot as plt
 
 import gmplot
@@ -67,16 +58,15 @@ from scipy.stats import kstest, probplot
 
 from sklearn.preprocessing import StandardScaler, LabelEncoder
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import confusion_matrix, accuracy_score, precision_recall_fscore_support
+from sklearn.metrics import log_loss
 
 from sklearn.neighbors import KNeighborsClassifier
-from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
 
-from xgboost import XGBClassifier
+from lightgbm import LGBMClassifier
 
 
-# In[5]:
+# In[4]:
 
 
 # Load the data
@@ -87,10 +77,13 @@ TEST_DF_PATH = 'data/test.csv'
 raw_train_df = pd.read_csv(TRAIN_DF_PATH, header=0)
 raw_test_df = pd.read_csv(TEST_DF_PATH, header=0)
 
-raw_concat_traintest_df = pd.concat([raw_train_df, raw_test_df], ignore_index=True, sort=False)
+raw_concat_traintest_df = pd.concat(
+    [raw_train_df, raw_test_df],
+    ignore_index=True, sort=False
+)
 
 
-# In[6]:
+# In[5]:
 
 
 def overview_df(dataset_df):
@@ -106,17 +99,17 @@ def overview_df(dataset_df):
     display(dataset_df.isnull().sum())
 
 
+# In[6]:
+
+
+# overview_df(raw_train_df)
+
+# overview_df(raw_test_df)
+
+# overview_df(raw_concat_traintest_df)
+
+
 # In[7]:
-
-
-overview_df(raw_train_df)
-
-overview_df(raw_test_df)
-
-overview_df(raw_concat_traintest_df)
-
-
-# In[8]:
 
 
 # Overview rows with unusual Longtitude and Latitude
@@ -161,47 +154,45 @@ def overview_col_name_occurences_fulldf_subsetdf(full_dataset_df, subset_df, col
 #             display(occurences)
 
 
+# In[8]:
+
+
+display("Incorrect coords: train")
+overview_invalid_long_lat(raw_train_df)
+
+display("Incorrect coords: test")
+overview_invalid_long_lat(raw_test_df)
+
+# display("Incorrect coords: concat train_test")
+# overview_invalid_long_lat(raw_concat_traintest_df)
+
+display("Occurences: train")
+overview_col_name_occurences_fulldf_subsetdf(
+    raw_train_df, raw_train_df[ raw_train_df['Y'] == 90.0 ],
+    'Address'
+)
+
+display("Occurences: test")
+overview_col_name_occurences_fulldf_subsetdf(
+    raw_test_df, raw_test_df[ raw_test_df['Y'] == 90.0 ],
+    'Address'
+)
+
+# display("Occurences: concat")
+# overview_col_name_occurences_fulldf_subsetdf(
+#     raw_concat_traintest_df, raw_concat_traintest_df[ raw_concat_traintest_df['Y'] == 90.0 ],
+#     'Address'
+# )
+
+
 # In[9]:
 
 
-overview_invalid_long_lat(raw_train_df)
-display('-')
-
-overview_invalid_long_lat(raw_test_df)
-display('-')
-
-overview_invalid_long_lat(raw_concat_traintest_df)
-display('-')
-
-overview_col_name_occurences_fulldf_subsetdf(
-    raw_train_df, raw_train_df[ raw_train_df['Y'] == 90.0 ], 'Address')
-display('-')
-
-overview_col_name_occurences_fulldf_subsetdf(
-    raw_test_df, raw_test_df[ raw_test_df['Y'] == 90.0 ], 'Address')
-display('-')
-
-overview_col_name_occurences_fulldf_subsetdf(
-    raw_concat_traintest_df, raw_concat_traintest_df[ raw_concat_traintest_df['Y'] == 90.0 ], 'Address')
-display('-')
-
-
-# In[10]:
-
-
-# Plot concatenated coordinates
-concat_no_invalid = raw_concat_traintest_df[ raw_concat_traintest_df['Y'] != 90.0 ]
-
-fig = plt.figure(figsize=(10, 10))
-plt.scatter(
-    x=concat_no_invalid['X'], y=concat_no_invalid['Y'],
-    s=1
-)
-plt.show()
-
 # Plot coordinates separately from train/test sets
+
 train_no_invalid = raw_train_df[ raw_train_df['Y'] != 90.0 ]
 test_no_invalid = raw_test_df[ raw_test_df['Y'] != 90.0 ]
+
 fig = plt.figure(figsize=(20, 20))
 plt.scatter(
     x=train_no_invalid['X'], y=train_no_invalid['Y'],
@@ -211,10 +202,11 @@ plt.scatter(
     x=test_no_invalid['X'], y=test_no_invalid['Y'],
     s=10, marker='^', alpha=0.2
 )
+
 plt.show()
 
 
-# In[11]:
+# In[10]:
 
 
 # Generate geographical heatmaps
@@ -241,7 +233,7 @@ test_gmap_html_iframe = IPython.display.IFrame(src='test_50k_rows_heatmap.html',
 display(test_gmap_html_iframe)
 
 
-# In[12]:
+# In[11]:
 
 
 # Note: in train and test datasets, X and Y coordinates are almost the same
@@ -269,7 +261,7 @@ display( kstest(train_no_invalid['X'], 'norm') )  # p=0
 display( kstest(test_no_invalid['Y'], 'norm') )  # p=0
 
 
-# In[13]:
+# In[12]:
 
 
 # Explore 'Dates' feature
@@ -279,7 +271,7 @@ def hist_by_groupby_valuecounts(dataset_df, col_name_to_groupby):
     plt.bar(col_valuecounts.index, col_valuecounts); plt.show()
 
 
-# In[14]:
+# In[13]:
 
 
 # Intermediate arrays: exploring 'Dates' feature
@@ -291,7 +283,7 @@ test_eda_dates = raw_test_df.copy()
 test_eda_dates['Dates'] = pd.to_datetime(test_eda_dates['Dates'])
 
 
-# In[15]:
+# In[14]:
 
 
 # 1. Hours
@@ -309,7 +301,7 @@ test_eda_dates['Hour'] = test_eda_dates['Dates'].dt.hour
 hist_by_groupby_valuecounts(test_eda_dates, 'Hour')
 
 
-# In[16]:
+# In[15]:
 
 
 # 2. Minutes
@@ -330,7 +322,7 @@ test_eda_dates['Minutes'] = test_eda_dates['Dates'].dt.minute
 hist_by_groupby_valuecounts(test_eda_dates, 'Minutes')
 
 
-# In[17]:
+# In[16]:
 
 
 # 3. Month
@@ -348,7 +340,7 @@ test_eda_dates['Month'] = test_eda_dates['Dates'].dt.month
 hist_by_groupby_valuecounts(test_eda_dates, 'Month')
 
 
-# In[18]:
+# In[17]:
 
 
 # 4. Year
@@ -360,7 +352,7 @@ train_eda_dates['Dates'].dt.year.hist(bins=13); plt.show()
 test_eda_dates['Dates'].dt.year.hist(bins=13); plt.show()
 
 
-# In[19]:
+# In[18]:
 
 
 # 5. Day of the week
@@ -377,7 +369,7 @@ train_eda_dates['Dates'].dt.dayofweek.hist(bins=7); plt.show()
 test_eda_dates['Dates'].dt.dayofweek.hist(bins=7); plt.show()
 
 
-# In[20]:
+# In[19]:
 
 
 # 6. Week of year
@@ -397,7 +389,7 @@ train_eda_dates['Dates'].dt.weekofyear.hist(bins=26); plt.show()
 test_eda_dates['Dates'].dt.weekofyear.hist(bins=26); plt.show()
 
 
-# In[39]:
+# In[20]:
 
 
 # 7. quantile cuts: which hours represent biggest crime rate - weird results for now, can't understand it
@@ -412,7 +404,7 @@ display(train_hour_valuecnts.sort_values())
 # plt.show()
 
 plt.bar(
-    train_hour_valuecnts, train_hour_valuecnts.index
+    train_hour_valuecnts.index, train_hour_valuecnts
 )
 plt.show()
 
@@ -537,6 +529,22 @@ display(
 # In[27]:
 
 
+# Explore crimes on street corners (street is like 'street 1 / street 2')
+
+# Almost 1/4 of crimes happens on such intersections: this might be a decent feature
+
+street_corner_crimes = raw_train_df['Address'].apply(
+    lambda x: 1 if '/' in x else 0
+)
+
+display(
+    street_corner_crimes.value_counts()
+)
+
+
+# In[28]:
+
+
 # Intermediate DF for fixing features
 
 fixd_train_df = raw_train_df.copy()
@@ -544,11 +552,11 @@ fixd_train_df = raw_train_df.copy()
 fixd_test_df = raw_test_df.copy()
 
 display(
-    fixd_train_df.size, fixd_test_df.size
+    fixd_train_df.shape, fixd_test_df.shape
 )
 
 
-# In[28]:
+# In[29]:
 
 
 # Fix rows with unusual Longtitude and Latitude == fix ['X', 'Y'] features values
@@ -585,7 +593,7 @@ _ugly_fix_invalid_coords_inplace_2(fixd_train_df)
 _ugly_fix_invalid_coords_inplace_2(fixd_test_df)
 
 
-# In[29]:
+# In[30]:
 
 
 overview_invalid_long_lat(fixd_train_df)  # should be 0
@@ -593,7 +601,29 @@ overview_invalid_long_lat(fixd_train_df)  # should be 0
 overview_invalid_long_lat(fixd_test_df)  # should be 0
 
 
-# In[64]:
+# In[31]:
+
+
+# Fix duplicated rows in train and test sets
+
+display(
+    'Duplicated items in train set: {0}'.format(fixd_train_df.duplicated().sum()),  # 2323 items
+    'Duplicated items in test set: {0}'.format(fixd_test_df.duplicated().sum())  # 0 items
+)
+
+fixd_train_df = fixd_train_df.drop_duplicates()
+
+
+# In[32]:
+
+
+display(
+    'Duplicated items in train set: {0}'.format(fixd_train_df.duplicated().sum()),  # should be 0
+    'Duplicated items in test set: {0}'.format(fixd_test_df.duplicated().sum())  # should be 0
+)
+
+
+# In[33]:
 
 
 # Intermediate array for performing feature engineering / features dropping
@@ -607,7 +637,7 @@ feateng_test_df = fixd_test_df.copy()
 # del fixd_test_df
 
 
-# In[65]:
+# In[34]:
 
 
 def date_col_to_datetime_inplace(dataset_df, date_col_name='Dates'):
@@ -617,33 +647,36 @@ def date_col_to_datetime_inplace(dataset_df, date_col_name='Dates'):
 def add_date_features_inplace(dataset_df, date_col_name='Dates'):
     # Time
     dataset_df['Hour'] = dataset_df[date_col_name].dt.hour
-    dataset_df['IsQuietTime'] = 0
-    dataset_df.loc[ (dataset_df['Hour'] >= 1) & (dataset_df['Hour'] <= 6), 'IsQuietTime' ] = 1
-    dataset_df['IsDangerousTime'] = 0
-    dataset_df.loc[ (dataset_df['Hour'] >= 15) & (dataset_df['Hour'] <= 19), 'IsDangerousTime' ] = 1
-    dataset_df['IsMidnight'] = 0
-    dataset_df.loc[ (dataset_df['Hour'] == 0), 'IsMidnight' ] = 1
-    dataset_df['IsLunchTime'] = 0
-    dataset_df.loc[ (dataset_df['Hour'] == 12), 'IsLunchTime' ] = 1
+    dataset_df['Minute'] = dataset_df[date_col_name].dt.minute
+#     dataset_df['IsQuietTime'] = 0
+#     dataset_df.loc[ (dataset_df['Hour'] >= 1) & (dataset_df['Hour'] <= 6), 'IsQuietTime' ] = 1
+#     dataset_df['IsDangerousTime'] = 0
+#     dataset_df.loc[ (dataset_df['Hour'] >= 15) & (dataset_df['Hour'] <= 19), 'IsDangerousTime' ] = 1
+#     dataset_df['IsMidnight'] = 0
+#     dataset_df.loc[ (dataset_df['Hour'] == 0), 'IsMidnight' ] = 1
+#     dataset_df['IsLunchTime'] = 0
+#     dataset_df.loc[ (dataset_df['Hour'] == 12), 'IsLunchTime' ] = 1
     # Date: general
+    dataset_df['n_days_passed'] = dataset_df[date_col_name] - dataset_df[date_col_name].min()
+    dataset_df['n_days_passed'] = dataset_df['n_days_passed'].apply( lambda x: x.days )
     dataset_df['Day'] = dataset_df[date_col_name].dt.day
     dataset_df['Month'] = dataset_df[date_col_name].dt.month
     dataset_df['Year'] = dataset_df[date_col_name].dt.year
     # Date: other
-    dataset_df['DayOfWeek'] = dataset_df[date_col_name].dt.dayofweek  # Overwrite raw 'DayOfWeek' feature
-    dataset_df['WeekOfYear'] = dataset_df[date_col_name].dt.weekofyear
-    dataset_df['IsWeekend'] = 0
-    dataset_df.loc[ dataset_df['DayOfWeek'] >= 5, 'IsWeekend' ] = 1
+    dataset_df['DayOfWeek'] = dataset_df[date_col_name].dt.weekday  # Overwrite raw 'DayOfWeek' feature
+#     dataset_df['WeekOfYear'] = dataset_df[date_col_name].dt.weekofyear
+#     dataset_df['IsWeekend'] = 0
+#     dataset_df.loc[ dataset_df['DayOfWeek'] >= 5, 'IsWeekend' ] = 1
     # Certain "unusual risk" days    
-    dataset_df['IsMiddleOfWeek'] = 0
-    dataset_df.loc[ dataset_df['DayOfWeek'] == 2, 'IsMiddleOfWeek' ] = 1
-    dataset_df['IsFriday'] = 0  # highest rate of crime
-    dataset_df.loc[ dataset_df['DayOfWeek'] == 4, 'IsFriday' ] = 1
-    dataset_df['IsSunday'] = 0  # if crime happened even on Sundays - very gangerous one  # lower rate of crime
-    dataset_df.loc[ dataset_df['DayOfWeek'] == 6, 'IsSunday' ] = 1
+#     dataset_df['IsMiddleOfWeek'] = 0
+#     dataset_df.loc[ dataset_df['DayOfWeek'] == 2, 'IsMiddleOfWeek' ] = 1
+#     dataset_df['IsFriday'] = 0  # highest rate of crime
+#     dataset_df.loc[ dataset_df['DayOfWeek'] == 4, 'IsFriday' ] = 1
+#     dataset_df['IsSunday'] = 0  # if crime happened even on Sundays - very gangerous one  # lower rate of crime
+#     dataset_df.loc[ dataset_df['DayOfWeek'] == 6, 'IsSunday' ] = 1
 
 
-# In[66]:
+# In[35]:
 
 
 date_col_to_datetime_inplace(feateng_train_df)
@@ -653,7 +686,7 @@ date_col_to_datetime_inplace(feateng_test_df)
 # display(feateng_test_df.dtypes)  # Dates: datetime64[ns]
 
 
-# In[67]:
+# In[36]:
 
 
 add_date_features_inplace(feateng_train_df)
@@ -661,72 +694,95 @@ add_date_features_inplace(feateng_train_df)
 add_date_features_inplace(feateng_test_df)
 
 
-# In[76]:
+# In[37]:
 
 
 # Explore newly created features
 
-display(
-    "IsQuietTime", feateng_train_df['IsQuietTime'].value_counts()
-)
+# display(
+#     "IsQuietTime", feateng_train_df['IsQuietTime'].value_counts()
+# )
 
-display(
-    "IsDangerousTime", feateng_train_df['IsDangerousTime'].value_counts()  # might be a bad one
-)
+# display(
+#     "IsDangerousTime", feateng_train_df['IsDangerousTime'].value_counts()  # might be a bad one
+# )
 
-display(
-    "IsMidnight", feateng_train_df['IsMidnight'].value_counts()
-)
+# display(
+#     "IsMidnight", feateng_train_df['IsMidnight'].value_counts()
+# )
 
-display(
-    "IsLunchTime", feateng_train_df['IsLunchTime'].value_counts()
-)
+# display(
+#     "IsLunchTime", feateng_train_df['IsLunchTime'].value_counts()
+# )
 
-display(
-    "IsWeekend", feateng_train_df['IsWeekend'].value_counts()
-)
+# display(
+#     "IsWeekend", feateng_train_df['IsWeekend'].value_counts()
+# )
 
-display(
-    "IsMiddleOfWeek", feateng_train_df['IsMiddleOfWeek'].value_counts()
-)
+# display(
+#     "IsMiddleOfWeek", feateng_train_df['IsMiddleOfWeek'].value_counts()
+# )
 
-display(
-    "IsFriday", feateng_train_df['IsFriday'].value_counts()
-)
+# display(
+#     "IsFriday", feateng_train_df['IsFriday'].value_counts()
+# )
 
-display(
-    "IsSunday", feateng_train_df['IsSunday'].value_counts()
-)
+# display(
+#     "IsSunday", feateng_train_df['IsSunday'].value_counts()
+# )
 
 
-# In[ ]:
+# In[38]:
 
 
 def add_address_features_inplace(dataset_df, addr_col_name='Address'):
-    dataset_df['IsBlock'] = 0
+    dataset_df['IsBlock'] = dataset_df[addr_col_name].str.contains('block', case=False)
+      
+#     dataset_df['IsIntersection'] = 0
+#     intersection_addresses = dataset_df[addr_col_name].str.contains('/', case=False, regex=False)
+#     isintersection_col_idx = dataset_df.columns.get_loc('IsIntersection')
+#     dataset_df.iloc[ intersection_addresses[intersection_addresses].index, isintersection_col_idx ] = 1
     
-    dataset_df['IsIntersection'] = 0
-    
-    dataset_df['IsBryantSt800Blk'] = 0
-    
+#     dataset_df['IsBryantSt800Blk'] = 0
+#     bryantst = "800 Block of BRYANT ST"
+#     bryantst_addresses = dataset_df[addr_col_name].str.contains(bryantst, case=False, regex=False)
+#     isbryantst_col_idx = dataset_df.columns.get_loc('IsBryantSt800Blk')
+#     dataset_df.iloc[ bryantst_addresses[bryantst_addresses].index, isbryantst_col_idx ] = 1
+
+
+# In[39]:
+
+
+add_address_features_inplace(feateng_train_df)
+
+add_address_features_inplace(feateng_test_df)
+
+
+# In[40]:
+
+
+# Display Pearson correlation
+
 display(
-    
+    feateng_train_df.corr()
 )
 
 
-# In[ ]:
+# In[41]:
 
 
+# Display the skew
+
+display(
+    feateng_train_df.skew()
+)
+
+display(
+    feateng_test_df.skew()
+)
 
 
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
+# In[42]:
 
 
 # Intermediate DFs : dropping features
@@ -739,209 +795,233 @@ dropfeat_test_df = feateng_test_df.copy()
 # del feateng_test_df
 
 
-# In[ ]:
+# In[43]:
 
 
-dropfeat_train_df = dropfeat_train_df.drop([''], axis=1)
+# y_train
+dropfeat_train_category = dropfeat_train_df['Category']
+# X_train
+dropfeat_train_df = dropfeat_train_df.drop(
+    ['Dates', 'Category', 'Descript', 'Resolution', 'Address'], 
+    axis=1
+)
 
-dropfeat_test_df
+# X_test
+# 'id' is saved in raw_test_df DataFrame
+dropfeat_test_df = dropfeat_test_df.drop(
+    ['Id', 'Dates', 'Address'],
+    axis=1
+)
 
 
-# In[ ]:
+# In[44]:
 
 
-# Intermediate DFs for baseline model
+display(
+    dropfeat_train_category.head(),
+    dropfeat_train_df.head(),
+    dropfeat_train_df.head()
+)  # should hold same dimensions
 
-baseline_train_df = dropfeat_train_df.copy()
-baseline_test_df = dropfeat_test_df.copy()
+
+# In[45]:
+
+
+# Intermediate DFs for feature encoding before applying data to model
+
+featenc_category_series = dropfeat_train_category.copy()
+
+featenc_train_df = dropfeat_train_df.copy()
+featenc_test_df = dropfeat_test_df.copy()
 
 # Cleanup old intermediate DFs
-# del feateng_train_df
-# del feateng_test_df
+# del dropfeat_train_df
+# del dropfeat_test_df
 
 
-# In[ ]:
+# In[46]:
 
 
+# Encode 'PdDistrict'
 
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
-
-
-# In[30]:
-
-
-# todo: review as histograms columns which you didn't before
-
-
-# todo: qcut for hour to check if IsRush/IsQuiet time are worth it
-
-# timefeatures_train_df['Hour'].hist(bins=24); plt.show()
-# timefeatures_test_df['Hour'].hist(bins=24); plt.show()
-
-# todo: ismorning
-# todo: isnight
-
-# timefeatures_train_df['Day'].hist(bins=7); plt.show()
-# timefeatures_test_df['Day'].hist(bins=7); plt.show()
-
-# timefeatures_train_df['Month'].hist(bins=12); plt.show()
-# timefeatures_test_df['Month'].hist(bins=12); plt.show()
-
-# todo: isWinter
-
-# # Note: 2014 - small amount of reported crimes
-# timefeatures_train_df['Year'].hist(bins=13); plt.show()
-# timefeatures_test_df['Year'].hist(bins=13); plt.show()
-
-# timefeatures_train_df['DayOfWeek'].hist(bins=7); plt.show()
-# timefeatures_test_df['DayOfWeek'].hist(bins=7); plt.show()
-
-# timefeatures_train_df['WeekOfYear'].hist(bins=26); plt.show()
-# timefeatures_test_df['WeekOfYear'].hist(bins=27); plt.show()
-
-# timefeatures_train_df['IsWeekend'].hist(bins=2); plt.show()
-# timefeatures_test_df['IsWeekend'].hist(bins=2); plt.show()
-
-# timefeatures_train_df['IsFriday'].hist(bins=2); plt.show()
-# timefeatures_test_df['IsFriday'].hist(bins=2); plt.show()
-
-# timefeatures_train_df['IsMiddleOfWeek'].hist(bins=2); plt.show()
-# timefeatures_test_df['IsMiddleOfWeek'].hist(bins=2); plt.show()
-
-# timefeatures_train_df['IsSunday'].hist(bins=2); plt.show()
-# timefeatures_test_df['IsSunday'].hist(bins=2); plt.show()
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
+distr_enc = LabelEncoder()
+featenc_train_df['PdDistrict'] = distr_enc.fit_transform( featenc_train_df['PdDistrict'] )
+featenc_test_df['PdDistrict'] = distr_enc.transform( featenc_test_df['PdDistrict'] )
 
 
 # In[47]:
 
 
-# Intermediate DFs
+# Encode 'IsBlock'
 
-baseline_train_df = timefeatures_train_df.copy()
-baseline_test_df = timefeatures_test_df.copy()
+featenc_train_df['IsBlock'] = featenc_train_df['IsBlock'].apply(
+    lambda x: int( x )
+)
+featenc_test_df['IsBlock'] = featenc_test_df['IsBlock'].apply(
+    lambda x: int( x )
+)
 
 
 # In[48]:
 
 
-# Encode 'Category' feature
+# Encode 'Category' in training set
 
-cat_lbl_encoder = LabelEncoder()
-baseline_train_df['CategoryLblEnc'] = cat_lbl_encoder.fit_transform(baseline_train_df['Category'])
+cat_enc = LabelEncoder()
+featenc_category_series = cat_enc.fit_transform( featenc_category_series )
 
 
 # In[49]:
 
 
-# Encode 'PdDistrict' feature
+# Intermediate DFs for baseline model
 
-pddistrict_lbl_encoder = LabelEncoder()
+baseline_category_series = featenc_category_series.copy()
 
-baseline_train_df['PdDistrict'] = pddistrict_lbl_encoder.fit_transform(baseline_train_df['PdDistrict'])
+baseline_train_df = featenc_train_df.copy()
+baseline_test_df = featenc_test_df.copy()
 
-baseline_test_df['PdDistrict'] = pddistrict_lbl_encoder.fit_transform(baseline_test_df['PdDistrict'])
+# Cleanup old intermediate DFs
+# del featenc_train_df
+# del featenc_train_df
 
 
-# In[50]:
+# In[51]:
 
 
-# Prepare baseline X and y from train_set
-baseline_y = baseline_train_df['CategoryLblEnc']
+# train/validation sets
 
-baseline_X = baseline_train_df.drop(
-    ['Dates', 'Category', 'Descript', 'Resolution', 'Address', 'X', 'Y', 'CategoryLblEnc'], axis=1
+X_tr, X_val, y_tr, y_val = train_test_split(
+    baseline_train_df, baseline_category_series
+)
+
+y_tr_categories_cnt = pd.unique( y_tr ).shape[0]  # 39
+y_val_categories_cnt = pd.unique( y_val ).shape[0]  # 39
+raw_y_train_categories_cnt = pd.unique( raw_train_df['Category'] ).shape[0]  # 39
+
+display(
+    y_tr_categories_cnt,
+    y_val_categories_cnt,
+    raw_y_train_categories_cnt
 )
 
 
-# In[59]:
+# In[52]:
 
 
-# Train-test split
+# Build the baseline model
 
-TRAIN_SIZE = 0.7
+lgbm_clf_model = LGBMClassifier(
+    objective='multiclass',
+    num_class=y_tr_categories_cnt
+)
 
-X_tr, X_val, y_tr, y_val = train_test_split(baseline_X, baseline_y, train_size=TRAIN_SIZE, random_state=42)
+lgbm_clf_model.fit( X_tr, y_tr )
+
+
+# In[53]:
+
+
+# Show features importances
+
+baseline_lgbm_feat_imp = pd.DataFrame(
+    sorted( zip( lgbm_clf_model.feature_importances_, X_tr.columns ), reverse=True ),
+    columns=['Importance Value', 'Feature']
+)
+
+display(
+    baseline_lgbm_feat_imp
+)
+
+
+# In[54]:
+
+
+# Evaluate baseline method
+
+baseline_y_pred = lgbm_clf_model.predict_proba(X_val)
+
+display(
+    log_loss(
+        y_val,
+        baseline_y_pred
+    )
+)
 
 
 # In[65]:
 
 
-# Create a baseline model
+# Try out kNN
 
-# xgbclf = XGBClassifier(n_estimators=100, reg_alpha=0.05, n_jobs=-1, verbosity=2)
-# xgbclf.fit(X_tr, y_tr)
+knn_model = KNeighborsClassifier(
+    n_neighbors=100,
+    n_jobs=-1
+)
 
-# from sklearn.neighbors import KNeighborsClassifier
-# from sklearn.linear_model import LogisticRegression
-# from sklearn.ensemble import RandomForestClassifier
+knn_model.fit(X_tr, y_tr)
+print('done fitting')
+
+predictions = knn_model.predict_proba(X_val)
+print('done predictions')
+
+display(
+    log_loss(
+        y_val,
+        predictions
+    )
+)
 
 
-# In[64]:
+# In[83]:
 
 
-knn_clf = KNeighborsClassifier(n_neighbors=10, n_jobs=-1)
-knn_clf = knn_clf.fit(X_tr, y_tr)
+# Submit model predictions
+
+def create_submission_file(file_path, model, predictions):
+    submission_df = pd.DataFrame( {'Id': raw_test_df['Id']} )
+
+    for category_name in cat_enc.inverse_transform(model.classes_):  # note: .classes_ for encoder model!!!
+        submission_df[category_name] = 0
+        
+    for row_num, pred_str in enumerate(cat_enc.inverse_transform(predictions)):    
+        submission_df[pred_str][row_num] = 1
+        if row_num % 100000 == 0:  # dbg purposes
+            print(row_num)
+
+    submission_df.to_csv(file_path, index=False)
 
 
 # In[67]:
 
 
-y_pred = knn_clf.predict(X_val)
+knn_model = KNeighborsClassifier(n_neighbors=100, n_jobs=-1)
+knn_model.fit( baseline_train_df, baseline_category_series )
+knn_predictions = knn_model.predict(baseline_test_df)
 
 
-# In[75]:
+# In[84]:
 
 
-display(y_val.values)
-display(y_pred)
-
-display(accuracy_score(y_val, y_pred))
+create_submission_file('knn_submission.csv', knn_model, knn_predictions)
 
 
-# In[20]:
+# In[85]:
 
 
-# todo: work with 'Descript' 
+lgbm_clf_model = LGBMClassifier(
+    objective='multiclass',
+    num_class=y_tr_categories_cnt
+)
 
-# display(
-#     timefeatures_train_df['Descript'].unique()
-# )
+lgbm_clf_model.fit( baseline_train_df, baseline_category_series )
+lgbm_predictions = lgbm_clf_model.predict( baseline_test_df )
 
-# display(
-#     timefeatures_train_df[
-#         (timefeatures_train_df['Descript'] == 'WARRANT ARREST') &
-#         (timefeatures_train_df['Category'] != 'WARRANTS')
-#     ]
-# )  # none
+
+# In[86]:
+
+
+create_submission_file('lgbm_submission.csv', lgbm_clf_model, lgbm_predictions)
 
 
 # In[21]:
@@ -958,28 +1038,20 @@ display(accuracy_score(y_val, y_pred))
 # todo: work with 'PdDistrict'
 
 
-# In[22]:
-
-
-# todo: plot different features with color='Category' on scatter plots / differnt kinds of charts
-
-# i.e. district by category type
-
-
-# In[23]:
-
-
-# todo: encode 'Category' feature
-
-
-# In[ ]:
-
-
-# todo: https://www.youtube.com/watch?v=ttVhB8ET5M8
-
-
 # In[ ]:
 
 
 # todo: apply Prophet to identify SEASONAL patterns!!!
+
+
+# In[ ]:
+
+
+# todo: qcut for hour to check if IsRush/IsQuiet features are worth it
+
+
+# In[ ]:
+
+
+# todo: isWinter/Summer/...  - "season" feature
 
