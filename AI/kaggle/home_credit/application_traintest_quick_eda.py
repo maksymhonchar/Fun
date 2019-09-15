@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[107]:
+# In[1]:
 
 
 # Load libraries
@@ -27,7 +27,7 @@ def quick_overview_df( dataset_df ):
     dataset_df.info()
 
 
-# In[68]:
+# In[3]:
 
 
 # Overview 'Application' table (train and test)
@@ -51,7 +51,7 @@ application_test = pd.read_csv( APPLICATION_TEST_FILEPATH, header=0 )
 # quick_overview_df( application_test )
 
 
-# In[53]:
+# In[6]:
 
 
 def display_freq_plot( dataset_df, col_name, ax,                       title_add='', sort_class=False, **kwargs):
@@ -126,7 +126,7 @@ def display_freq_plot_traintest( train_df, test_df, col_name ):
     display_freq_plot( test_df, col_name, ax=ax_1, title_add='TEST' )
 
 
-# In[69]:
+# In[7]:
 
 
 # Type 1 overview: basic frequency overview
@@ -202,7 +202,7 @@ for col_name in cols_to_overview:
 # 
 
 
-# In[84]:
+# In[8]:
 
 
 # ugly: Manually remove outliers
@@ -214,19 +214,19 @@ application_train = application_train[ application_train['NAME_INCOME_TYPE'] != 
 application_train = application_train[ application_train['NAME_INCOME_TYPE'] != 'Unemployed' ]
 
 
-# In[82]:
+# In[9]:
 
 
 application_train['NAME_INCOME_TYPE'].value_counts()
 
 
-# In[83]:
+# In[10]:
 
 
 application_test['NAME_INCOME_TYPE'].value_counts()
 
 
-# In[85]:
+# In[11]:
 
 
 # target=0 and target=1 DFs
@@ -235,7 +235,7 @@ train_target_0_rows = application_train[application_train['TARGET'] == 0]
 train_target_1_rows = application_train[application_train['TARGET'] == 1]
 
 
-# In[86]:
+# In[62]:
 
 
 # Type 2 overview: freq plot by target={0, 1}
@@ -244,7 +244,9 @@ cols_to_overview = [
     'NAME_CONTRACT_TYPE', 'CODE_GENDER', 'NAME_FAMILY_STATUS',
     'FLAG_OWN_CAR', 'FLAG_OWN_REALTY',
     'CNT_CHILDREN', 'CNT_FAM_MEMBERS',
-    'NAME_INCOME_TYPE', 'OCCUPATION_TYPE', 'NAME_EDUCATION_TYPE', 'NAME_HOUSING_TYPE']
+    'NAME_INCOME_TYPE', 'OCCUPATION_TYPE', 'NAME_EDUCATION_TYPE', 'NAME_HOUSING_TYPE',
+    'REG_CITY_NOT_LIVE_CITY', 'REG_CITY_NOT_WORK_CITY'
+]
 
 for col_name in cols_to_overview:
     display_freq_plot_by_target( train_target_0_rows, train_target_1_rows, col_name )
@@ -292,11 +294,15 @@ for col_name in cols_to_overview:
 # With parents - second worst category of borrowers - 11.7%
 # Others: 7-9%
 
+# REG_CITY_NOT_LIVE_CITY, REG_CITY_NOT_WORK_CITY
+# Clients permanent address NOT where one lives now - 12% (!) while 7.7% for the opposite situation
+# Same for WORK - fake work = 10% that target will be a bad borrower
 
-# In[142]:
+
+# In[25]:
 
 
-def display_distr( dataset_df, col_name, ax,                   n_bins=100, display_kde=True, title_add_text='', log_transform=False ):
+def display_distr( dataset_df, col_name, ax,                   n_bins=100, display_kde=True, title_add_text='', log_transform=False, hist_color='black'):
     data_to_display = dataset_df[col_name]
     if log_transform:
         data_to_display = np.log( data_to_display )
@@ -305,7 +311,7 @@ def display_distr( dataset_df, col_name, ax,                   n_bins=100, displ
         bins=n_bins,
         density=True,
         label='{0} distribution'.format(col_name),
-        color='black'
+        color=hist_color
     )
     if display_kde:
         data_to_display.plot(kind='density', color='red', ax=ax)
@@ -330,7 +336,7 @@ def display_full_distr_overview( train_df, test_df, col_name ):
     )
 
 
-# In[143]:
+# In[14]:
 
 
 # Type 3 overview: distribution of continuous features 
@@ -348,7 +354,7 @@ display_distr_traintest(  # borrowers withh total income < 10 mln
 )
 
 
-# In[144]:
+# In[15]:
 
 
 # AMT_CREDIT
@@ -356,7 +362,7 @@ display( 'AMT_CREDIT' )
 display_full_distr_overview( application_train, application_test, 'AMT_CREDIT' )
 
 
-# In[145]:
+# In[16]:
 
 
 # AMT_ANNUITY
@@ -365,7 +371,7 @@ display( 'AMT_ANNUITY' )
 display_full_distr_overview( application_train, application_test, 'AMT_ANNUITY' )
 
 
-# In[146]:
+# In[17]:
 
 
 # AMT_GOODS_PRICE
@@ -374,7 +380,7 @@ display( 'AMT_GOODS_PRICE' )
 display_full_distr_overview( application_train, application_test, 'AMT_GOODS_PRICE' )
 
 
-# In[169]:
+# In[18]:
 
 
 # DAYS_BIRTH
@@ -398,7 +404,7 @@ display_distr_traintest(  # borrowers withh total income < 10 mln
 )
 
 
-# In[173]:
+# In[19]:
 
 
 # DAYS_EMPLOYED
@@ -424,4 +430,116 @@ display_distr_traintest(  # borrowers withh total income < 10 mln
     'DAYS_EMPLOYED',
     display_kde=True, log_transform=False
 )
+
+
+# In[58]:
+
+
+# Type 4 overview: compare distributions of continuous features for target={0,1}
+
+train_0_less_mln = train_target_0_rows[train_target_0_rows['AMT_INCOME_TOTAL'] < 10**6]
+train_1_less_mln = train_target_1_rows[train_target_1_rows['AMT_INCOME_TOTAL'] < 10**6]
+
+fig, ax = plt.subplots()
+ax.hist( train_0_less_mln['AMT_INCOME_TOTAL'], bins=75, alpha=0.5, label='TARGET=0', density=True )
+ax.hist( train_1_less_mln['AMT_INCOME_TOTAL'], bins=75, alpha=0.5, label='TARGET=1', density=True )
+ax.legend()
+plt.show()
+
+display(  # reject
+    'KS test: {0}'.format(
+        stats.ks_2samp(
+            train_0_less_mln['AMT_INCOME_TOTAL'],
+            train_1_less_mln['AMT_INCOME_TOTAL']
+        )
+    )
+)
+
+# almost the same - ?!
+
+
+# In[57]:
+
+
+fig, ax = plt.subplots()
+ax.hist( train_0_less_mln['AMT_CREDIT'], bins=75, alpha=0.75, label='TARGET=0', density=True )
+ax.hist( train_1_less_mln['AMT_CREDIT'], bins=75, alpha=0.75, label='TARGET=1', density=True )
+ax.legend()
+plt.show()
+
+display(  # reject
+    'KS test: {0}'.format(
+        stats.ks_2samp(
+            train_0_less_mln['AMT_CREDIT'],
+            train_1_less_mln['AMT_CREDIT']
+        )
+    )
+)
+
+# 30k-60k - most borrowers didn't repay back
+# 0-25k - same density; 100+k - same density
+
+
+# In[50]:
+
+
+fig, ax = plt.subplots()
+ax.hist( train_0_less_mln['AMT_ANNUITY'], bins=75, alpha=0.75, label='TARGET=0', density=True )
+ax.hist( train_1_less_mln['AMT_ANNUITY'], bins=75, alpha=0.75, label='TARGET=1', density=True )
+ax.legend()
+plt.show()
+
+display(  # reject
+    'KS test: {0}'.format(
+        stats.ks_2samp(
+            train_0_less_mln['AMT_ANNUITY'],
+            train_1_less_mln['AMT_ANNUITY']
+        )
+    )
+)
+
+# Low annuity 25k-40k - sign for borrower to become target=1
+
+
+# In[60]:
+
+
+fig, ax = plt.subplots()
+ax.hist( train_0_less_mln['DAYS_REGISTRATION'], bins=75, alpha=0.75, label='TARGET=0', density=True )
+ax.hist( train_1_less_mln['DAYS_REGISTRATION'], bins=75, alpha=0.75, label='TARGET=1', density=True )
+ax.legend()
+plt.show()
+
+display(  # reject
+    'KS test: {0}'.format(
+        stats.ks_2samp(
+            train_0_less_mln['DAYS_REGISTRATION'],
+            train_1_less_mln['DAYS_REGISTRATION']
+        )
+    )
+)
+
+# Days -6000+ - clear sign for target=1; for <-6000 - sign for target=0
+
+
+# In[61]:
+
+
+fig, ax = plt.subplots()
+ax.hist( train_0_less_mln['DAYS_ID_PUBLISH'], bins=75, alpha=0.75, label='TARGET=0', density=True )
+ax.hist( train_1_less_mln['DAYS_ID_PUBLISH'], bins=75, alpha=0.75, label='TARGET=1', density=True )
+ax.legend()
+plt.show()
+
+display(  # reject
+    'KS test: {0}'.format(
+        stats.ks_2samp(
+            train_0_less_mln['DAYS_ID_PUBLISH'],
+            train_1_less_mln['DAYS_ID_PUBLISH']
+        )
+    )
+)
+
+# Days -3000+ - clear sign for target=1; for <-4000 - sign for target=0
+# -3000 - -4000 - 50/50
 
