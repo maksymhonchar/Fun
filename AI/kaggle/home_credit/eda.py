@@ -1,6 +1,13 @@
 #!/usr/bin/env python
 # coding: utf-8
 
+# In[ ]:
+
+
+import gc
+gc.collect()
+
+
 # In[1]:
 
 
@@ -235,7 +242,7 @@ train_target_0_rows = application_train[application_train['TARGET'] == 0]
 train_target_1_rows = application_train[application_train['TARGET'] == 1]
 
 
-# In[62]:
+# In[12]:
 
 
 # Type 2 overview: freq plot by target={0, 1}
@@ -299,7 +306,7 @@ for col_name in cols_to_overview:
 # Same for WORK - fake work = 10% that target will be a bad borrower
 
 
-# In[25]:
+# In[13]:
 
 
 def display_distr( dataset_df, col_name, ax,                   n_bins=100, display_kde=True, title_add_text='', log_transform=False, hist_color='black'):
@@ -432,7 +439,30 @@ display_distr_traintest(  # borrowers withh total income < 10 mln
 )
 
 
-# In[58]:
+# In[20]:
+
+
+def display_hist_density_target_0_1( target_1_df, target_0_df, col_name ):
+    display(col_name)
+    
+    fig, ax = plt.subplots()
+    ax.hist( target_0_df[col_name], bins=75, alpha=0.5, label='TARGET=0', density=True )
+    ax.hist( target_1_df[col_name], bins=75, alpha=0.5, label='TARGET=1', density=True )
+    ax.legend()
+    plt.show()
+
+    display(  # reject
+        'KS test: for {0}: {1}'.format(
+            col_name,
+            stats.ks_2samp(
+                target_0_df['AMT_INCOME_TOTAL'],
+                target_1_df['AMT_INCOME_TOTAL']
+            )
+        )
+    )
+
+
+# In[21]:
 
 
 # Type 4 overview: compare distributions of continuous features for target={0,1}
@@ -440,106 +470,207 @@ display_distr_traintest(  # borrowers withh total income < 10 mln
 train_0_less_mln = train_target_0_rows[train_target_0_rows['AMT_INCOME_TOTAL'] < 10**6]
 train_1_less_mln = train_target_1_rows[train_target_1_rows['AMT_INCOME_TOTAL'] < 10**6]
 
-fig, ax = plt.subplots()
-ax.hist( train_0_less_mln['AMT_INCOME_TOTAL'], bins=75, alpha=0.5, label='TARGET=0', density=True )
-ax.hist( train_1_less_mln['AMT_INCOME_TOTAL'], bins=75, alpha=0.5, label='TARGET=1', density=True )
-ax.legend()
-plt.show()
+display_hist_density_target_0_1( train_0_less_mln, train_1_less_mln, 'AMT_INCOME_TOTAL' )
 
-display(  # reject
-    'KS test: {0}'.format(
-        stats.ks_2samp(
-            train_0_less_mln['AMT_INCOME_TOTAL'],
-            train_1_less_mln['AMT_INCOME_TOTAL']
-        )
-    )
-)
+# 'AMT_INCOME_TOTAL'
+# density is almost the same - why?
 
-# almost the same - ?!
+cols_to_overview = [
+    'AMT_CREDIT', 'AMT_ANNUITY', 'DAYS_REGISTRATION', 'DAYS_ID_PUBLISH'
+]
 
-
-# In[57]:
-
-
-fig, ax = plt.subplots()
-ax.hist( train_0_less_mln['AMT_CREDIT'], bins=75, alpha=0.75, label='TARGET=0', density=True )
-ax.hist( train_1_less_mln['AMT_CREDIT'], bins=75, alpha=0.75, label='TARGET=1', density=True )
-ax.legend()
-plt.show()
-
-display(  # reject
-    'KS test: {0}'.format(
-        stats.ks_2samp(
-            train_0_less_mln['AMT_CREDIT'],
-            train_1_less_mln['AMT_CREDIT']
-        )
-    )
-)
-
+for col_name in cols_to_overview:
+    display_hist_density_target_0_1( train_0_less_mln, train_1_less_mln, col_name )
+    
+# 'AMT_CREDIT'
 # 30k-60k - most borrowers didn't repay back
 # 0-25k - same density; 100+k - same density
 
-
-# In[50]:
-
-
-fig, ax = plt.subplots()
-ax.hist( train_0_less_mln['AMT_ANNUITY'], bins=75, alpha=0.75, label='TARGET=0', density=True )
-ax.hist( train_1_less_mln['AMT_ANNUITY'], bins=75, alpha=0.75, label='TARGET=1', density=True )
-ax.legend()
-plt.show()
-
-display(  # reject
-    'KS test: {0}'.format(
-        stats.ks_2samp(
-            train_0_less_mln['AMT_ANNUITY'],
-            train_1_less_mln['AMT_ANNUITY']
-        )
-    )
-)
-
+# 'AMT_ANNUITY'
 # Low annuity 25k-40k - sign for borrower to become target=1
 
-
-# In[60]:
-
-
-fig, ax = plt.subplots()
-ax.hist( train_0_less_mln['DAYS_REGISTRATION'], bins=75, alpha=0.75, label='TARGET=0', density=True )
-ax.hist( train_1_less_mln['DAYS_REGISTRATION'], bins=75, alpha=0.75, label='TARGET=1', density=True )
-ax.legend()
-plt.show()
-
-display(  # reject
-    'KS test: {0}'.format(
-        stats.ks_2samp(
-            train_0_less_mln['DAYS_REGISTRATION'],
-            train_1_less_mln['DAYS_REGISTRATION']
-        )
-    )
-)
-
+# 'DAYS_REGISTRATION'
 # Days -6000+ - clear sign for target=1; for <-6000 - sign for target=0
 
-
-# In[61]:
-
-
-fig, ax = plt.subplots()
-ax.hist( train_0_less_mln['DAYS_ID_PUBLISH'], bins=75, alpha=0.75, label='TARGET=0', density=True )
-ax.hist( train_1_less_mln['DAYS_ID_PUBLISH'], bins=75, alpha=0.75, label='TARGET=1', density=True )
-ax.legend()
-plt.show()
-
-display(  # reject
-    'KS test: {0}'.format(
-        stats.ks_2samp(
-            train_0_less_mln['DAYS_ID_PUBLISH'],
-            train_1_less_mln['DAYS_ID_PUBLISH']
-        )
-    )
-)
-
+# 'DAYS_ID_PUBLISH'
 # Days -3000+ - clear sign for target=1; for <-4000 - sign for target=0
 # -3000 - -4000 - 50/50
+
+
+# In[22]:
+
+
+# Overview 'Bureau' table
+
+# SK_ID_CURR - FK for application_X table
+
+BUREAU_FILEPATH = 'data/bureau.csv'
+bureau = pd.read_csv( BUREAU_FILEPATH, header=0 )
+
+
+# In[24]:
+
+
+# quick_overview_df( bureau )
+
+
+# In[25]:
+
+
+merged_applicationtrain_bureau = pd.merge(
+    left=application_train, right=bureau,
+    on='SK_ID_CURR',
+    how='inner'
+)
+
+
+# In[28]:
+
+
+# quick_overview_df( merged_applicationtrain_bureau )
+
+
+# In[29]:
+
+
+merged_apptrain_bur_target_0 = merged_applicationtrain_bureau[merged_applicationtrain_bureau['TARGET'] == 0]
+merged_apptrain_bur_target_1 = merged_applicationtrain_bureau[merged_applicationtrain_bureau['TARGET'] == 1]
+
+
+# In[36]:
+
+
+cols_to_overview_distr_t0_t1 = [
+    'CREDIT_CURRENCY', 'CREDIT_TYPE'
+]
+cols_to_overview_prop = [
+    'CREDIT_ACTIVE',
+]
+
+for col_name in cols_to_overview_distr_t0_t1:
+    fig, ax_0 = plt.subplots()
+    display_freq_plot( merged_applicationtrain_bureau, col_name, ax=ax_0 )
+    plt.show()
+
+for col_name in cols_to_overview_prop:
+    display_freq_plot_by_target( merged_apptrain_bur_target_0, merged_apptrain_bur_target_1, col_name )
+
+# 'CREDIT_CURRENCY'
+# Mostly credits are in 'currency_1' (RUB?)
+# Proportion of clients with TARGET=1 is different: currency_3 (12%) -> currency_1 (9%) -> currency_2 (5%) -> currency_4 (0%)
+# This might NOT be a good feature
+
+# 'CREDIT_TYPE'
+# Consumer dept - 73% of total contracts; 23.46% - credit card; <5% - all others
+# However, when looking at credit_type with target=1:
+# loan for the purchase of equipment - 25% (!) becoming target=1
+# microloan - 20% (!)
+# credit card - 13%
+# consumer credit - 8%
+
+# 'CREDIT_ACTIVE'
+# Most of the contracts are already closed (2/3); 1/3 is active
+# Sold debts and Bad debt are <1% of grand total
+# People with TARGET=0 share same proportion as general distribution: 2/3 closed 1/3 active
+# Whereas people with TARGET=1 are more prone to have 'active' status: 44%
+# PCT of grand total for TARGET=1: bad dept (20%) -> sold (10%) -> active (9.3%) -> closed (7%)
+
+
+# In[37]:
+
+
+# Overview 'Prev applications' table
+
+# SK_ID_CURR - FK for application_X table
+
+PREVAPPLICATIONS_FILEPATH = 'data/previous_application.csv'
+prevapplications = pd.read_csv( PREVAPPLICATIONS_FILEPATH, header=0 )
+
+
+# In[39]:
+
+
+# quick_overview_df( prevapplications )
+
+
+# In[40]:
+
+
+merged_apptrain_prevapps = pd.merge(
+    left=application_train, right=prevapplications,
+    on='SK_ID_CURR',
+    how='inner'
+)
+
+
+# In[42]:
+
+
+# quick_overview_df( merged_apptrain_prevapps )
+
+
+# In[43]:
+
+
+merged_apptrain_prevapp_target_0 = merged_apptrain_prevapps[merged_apptrain_prevapps['TARGET'] == 0]
+merged_apptrain_prevapp_target_1 = merged_apptrain_prevapps[merged_apptrain_prevapps['TARGET'] == 1]
+
+
+# In[47]:
+
+
+# 'NAME_CLIENT_TYPE'
+# Either you are repeater, new - prob of getting TARGET=1 is the same - 9%
+# Most of clients are 'repeater'-s (73%)
+
+# 'NAME_CONTRACT_TYPE_y'
+# 2 main contract made earlier: Cash loans, Consumer loans (44%, 44%). 3rd type - Revolving loans, 11%
+# Most problematic was 'Revolving loans' category - 10.5% of borrowers didn't pay back in time
+# 2nd problematic - consumer loans (9%), 3rd problematic - cash loans (7.8%)
+
+# 'NAME_PAYMENT_TYPE'
+# Most of borrowers received their cash from the bank.
+# 'XNA' on 2nd place of popularity - weird. Does it mean through the post? Or from e-bank (Qiwi?)
+# Chance of getting TARGET=1 status is almost equal in all classes - +-8%
+
+# 'NAME_CONTRACT_STATUS'
+# Cancelled vs Refused - ?!
+# Note: only 1% of offers are UNUSED
+# Clients with previous contracts have target=1 mostly when their status were 'Refused' (11%) or Cancelled (10%)
+# Clients that were earlier 'Approved' have 8% chance to become TARGET=1
+
+fig, ax_0 = plt.subplots()
+display_freq_plot( merged_apptrain_prevapp_target_0, 'NAME_CLIENT_TYPE', ax=ax_0 )
+plt.show()
+
+display_freq_plot_by_target( merged_apptrain_prevapp_target_0, merged_apptrain_prevapp_target_1, 'NAME_CLIENT_TYPE' )
+
+
+# In[49]:
+
+
+# Overview 'POS_CASH_balance' table
+
+POSCASHBALANCE_FILEPATH = 'data/POS_CASH_balance.csv'
+poscashbalance = pd.read_csv( POSCASHBALANCE_FILEPATH, header=0 )
+
+
+# In[51]:
+
+
+# quick_overview_df( poscashbalance )
+
+
+# In[56]:
+
+
+# Max contract lifetime - 9 months
+
+# poscashbalance.groupby(['SK_ID_CURR', 'MONTHS_BALANCE']).size().max()  # 9
+
+# 'NAME_CONTRACT_STATUS'
+# Most (99%) are either Active or completed - nothing special there
+fig, ax_0 = plt.subplots()
+display_freq_plot( poscashbalance, 'NAME_CONTRACT_STATUS', ax=ax_0 )
+plt.show()
 
