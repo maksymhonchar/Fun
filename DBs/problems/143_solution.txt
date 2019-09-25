@@ -1,0 +1,65 @@
+Некрасивое, зато быстрое решение:
+cost	0.0033120000734925
+operations	2
+
+SELECT
+	b.name,
+        CONVERT(DATE, b.date) AS 'date',
+        CASE 
+                DATEPART(WEEKDAY, DATEADD(HOUR, -1, DATEADD(MONTH, DATEDIFF(MONTH, 0, b.date)+1, 0)))  -- день недели последнего дня в месяце, 1 - вс
+                WHEN 1 THEN CONVERT(date,
+                                    DATEADD(DAY, -2, DATEADD(HOUR, -1, DATEADD(MONTH, DATEDIFF(MONTH, 0, b.date)+1, 0)))
+                                    )  -- последним днем в месяце было вс
+                WHEN 2 THEN CONVERT(date,
+                                    DATEADD(DAY, -3, DATEADD(HOUR, -1, DATEADD(MONTH, DATEDIFF(MONTH, 0, b.date)+1, 0)))
+                                    )  -- последним днем в месяце был пн
+                WHEN 3 THEN CONVERT(date,
+                                    DATEADD(DAY, -4, DATEADD(HOUR, -1, DATEADD(MONTH, DATEDIFF(MONTH, 0, b.date)+1, 0)))
+                                    )  -- последним днем в месяце был вт
+                WHEN 4 THEN CONVERT(date,
+                                    DATEADD(DAY, -5, DATEADD(HOUR, -1, DATEADD(MONTH, DATEDIFF(MONTH, 0, b.date)+1, 0)))
+                                    )  -- последним днем в месяце была ср
+                WHEN 5 THEN CONVERT(date,
+                                    DATEADD(DAY, -6, DATEADD(HOUR, -1, DATEADD(MONTH, DATEDIFF(MONTH, 0, b.date)+1, 0)))
+                                    )  -- последним днем в месяце был чт
+                WHEN 7 THEN CONVERT(date,
+                                    DATEADD(DAY, -1, DATEADD(HOUR, -1, DATEADD(MONTH, DATEDIFF(MONTH, 0, b.date)+1, 0)))
+                                    )  -- последним днем в месяце была сб
+                ELSE CONVERT(date,
+                             DATEADD(HOUR, -1, DATEADD(MONTH, DATEDIFF(MONTH, 0, b.date)+1, 0))
+                             )  -- последним днем в месяце была пт
+        END AS 'fri'
+FROM
+	Battles b
+WHERE
+	b.date IS NOT NULL
+
+
+Более красивое решение, но помедленнее за счет JOIN:
+cost	0.044373787939548
+operations	7
+
+WITH date_last_month_days AS (
+	SELECT
+	        b.date AS 'date',
+                DATEADD(HOUR, -1, DATEADD(MONTH, DATEDIFF(MONTH, 0, b.date)+1, 0)) AS 'last_day'
+	FROM Battles b
+)
+SELECT
+	b.name,
+	FORMAT(b.date, 'yyyy-MM-dd') AS 'date',
+	CASE
+                DATEPART(WEEKDAY, dlmd.last_day)
+                WHEN 1 THEN FORMAT(DATEADD(DAY, -2, dlmd.last_day), 'yyyy-MM-dd')
+                WHEN 2 THEN FORMAT(DATEADD(DAY, -3, dlmd.last_day), 'yyyy-MM-dd')
+                WHEN 3 THEN FORMAT(DATEADD(DAY, -4, dlmd.last_day), 'yyyy-MM-dd')
+                WHEN 4 THEN FORMAT(DATEADD(DAY, -5, dlmd.last_day), 'yyyy-MM-dd')
+                WHEN 5 THEN FORMAT(DATEADD(DAY, -6, dlmd.last_day), 'yyyy-MM-dd')
+                WHEN 7 THEN FORMAT(DATEADD(DAY, -1, dlmd.last_day), 'yyyy-MM-dd')
+                ELSE FORMAT(dlmd.last_day, 'yyyy-MM-dd')
+        END
+FROM Battles b
+INNER JOIN date_last_month_days dlmd
+ON b.date = dlmd.date
+
+

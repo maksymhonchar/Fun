@@ -13,6 +13,9 @@ sudo -u postgres psql
 \conninfo
 \d		(view tables)
 \dt		(view table without the sequence)
+table tablename describe table (simple)
+\d+ tablename   describe table (advanced)
+explain [query] build and print a query plan
 
 # CREATE A NEW ROLE
 sudo -u postgres createuser --interactive
@@ -24,3 +27,10 @@ sudo -u postgres createdb demodb
 OR
 createdb demodb 	when logged as postgres:
 
+# Transactions
+begin;
+// check txid with txid_getcurrent()
+query1
+query2
+...
+commit;
