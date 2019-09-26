@@ -11,6 +11,7 @@ sudo -u postgres psql
 \q		(exit the PostgreSQL prompt)
 \du[+]		(list all user accounts)
 \conninfo
+\c dbname       connect to certain database
 \d		(view tables)
 \dt		(view table without the sequence)
 table tablename describe table (simple)
@@ -34,3 +35,6 @@ query1
 query2
 ...
 commit;
+
+# Get full Postgres version
+select version();
