@@ -85,3 +85,46 @@ GROUP BY
 
 - The ROLLUP assumes a hierarchy among the input columns and generates all grouping sets that make sense considering the hierarchy. This is the reason why ROLLUP is often used to generate the subtotals and the grand total for reports.
 
+- A common use of  ROLLUP is to calculate the aggregations of data by year, month, and date, considering the hierarchy year > month > date
+
+- Comparison of CUBE vs ROLLUP:
+    - CUBE (c1,c2,c3)
+    (c1, c2, c3)
+    (c1, c2)
+    (c2, c3)
+    (c1,c3)
+    (c1)
+    (c2)
+    (c3)
+    ()
+    - ROLLUP(c1,c2,c3)  -- assume the hierarchy c1>c2>c3
+    (c1, c2, c3)
+    (c1, c2)
+    (c1)
+    ()
+
+- Syntaxis example:
+SELECT
+    c1,
+    c2,
+    c3,
+    aggregate(c4)
+FROM
+    table_name
+GROUP BY
+    ROLLUP (c1, c2, c3);
+
+- Example: find the number of rental per day, month and year by using the ROLLUP
+SELECT
+    EXTRACT (YEAR FROM rental_date) y,
+    EXTRACT (MONTH FROM rental_date) M,
+    EXTRACT (DAY FROM rental_date) d,
+    COUNT (rental_id)
+FROM
+    rental
+GROUP BY
+    ROLLUP (
+        EXTRACT (YEAR FROM rental_date),
+        EXTRACT (MONTH FROM rental_date),
+        EXTRACT (DAY FROM rental_date)
+    );
