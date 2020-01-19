@@ -6,7 +6,6 @@
 - learn about key statistical concepts like sampling uncertainty variation missing values distributions etc
 - get hands dirty with analysing a dataset exploring how what people eat affects their risk of cancer
 
-
 # Uses of statistics in public heatlh
 - Wiki: statistics is a branch of mathematics dealing with the collection, analysis, interpretation, presentation and organizing of data
 - John Snow - published a study about relation between the districs in London and spreading of Cholera disease.

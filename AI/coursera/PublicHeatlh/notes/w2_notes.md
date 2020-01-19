@@ -140,4 +140,3 @@
         - convenience sampling and volunteer samples
 - Convenience sampling uses a readily available sample to select participants in a non-random manner e.g. selecting all patients that walk into a healthcare clinic to answer a questionnaire. With convenience sampling there is no way of knowing if the time, location etc. effected the type of potential participant available and how the sample might differ if it had been conducted at a different time or location.
 - Volunteer sampling is a non-random method where participants themselves opt into the sample. For example, an advert goes out on the radio requesting that listeners go online to complete a questionnaire. With volunteer sampling, you have no way to assess if and how those that choose to participate differ to those that did not. Think about what might motivate someone to volunteer into a sample and how this might affect your data.
-

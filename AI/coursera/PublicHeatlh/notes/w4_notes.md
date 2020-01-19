@@ -104,3 +104,37 @@
 
 - The bigger the test statistic (either more positive or more negative), the more likely that it’s come from a distribution with a different mean.
 - P-value of t test: under the null hypothesis, we are expecting it to come from a t-distribution with mean zero, so how likely is that given our test statistic? Answer - p-value
+
+# The difference between chi2 test and t-test
+- t-test:
+    - The independent-samples t-test is the appropriate test when the dependent and independent variable are binary and continuous respectively
+    - The null hypothesis could be that the mean BMI in those with cancer equals the mean BMI in those without
+    - The alternative hypothesis is then that the mean BMI in those with cancer is not equal to the mean BMI in those without
+- Chi-squared test:
+    - chi-squared test is the appropriate test when both the dependent and independent variables are discrete
+
+- So how do you decide which test to perform?
+    - Firstly, what is your research question? Are you comparing a sample estimate with a known population value? Are you comparing two sample estimates from two different populations? Are you comparing two sample estimates from two related populations, for example in a study where patients each provide not one but two values such as before and after being given a particular treatment? Are you trying to identify the relationship between two variables? Are you aiming to make predictions?
+    - Secondly, what is the nature or type of your measurements/variables from your sample(s)? Do you have discrete or continuous variables?
+    - see t_test_chi2_test_differences.png for more details
+
+# Choosing the Sample Size for your Study
+- Most common sample size in medicine is zero, because the researchers cant get thet money to even begin the study :(
+- Study type / study design
+    - there are many different study types in medicine and public health:
+        - the case series - describes a few people with something common
+        - clinical trial - patients are randomised to receive one treatment or another
+- You could also use some non-trial design:
+    - use administrative data / Electronic health records 
+- Sample size varies greatly - one of the main determinants of that is the need to be able to show evidence of an important difference between the patient groups we are studying
+    - example: evaluate promotion campaign to reduce smoking rates, which will be held in a few areas, we want Control group with whom to compare the results
+- Minimum clinically important difference
+    - Answers the question "what size difference would you consider success enough to want to you to roll out the intervention to other areas?"
+    - It should be big enough to get someone excited and to make someone change some policy
+- Our results should be:
+    1. statistically significant
+    2. clinically significant
+- The more patients - the more likely we get a low p-value
+- To sum up: sample size = science + reality
+    - science side: study design, size of the minimum clinically important difference that's worth detecting, how sure we want to be that there is a real difference between the groups (p-value)
+    - reality side: need to get funding, logistics of recruiting the patients
