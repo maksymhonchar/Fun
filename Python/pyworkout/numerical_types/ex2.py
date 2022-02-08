@@ -1,4 +1,4 @@
-def mysum(*numbers):
+def mysum(*numbers) -> int:
     result = 0
 
     for number in numbers:
