@@ -1,0 +1,458 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+
+<head>
+  <!-- Google Tag Manager -->
+  <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+  new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+  j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+  'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+  })(window,document,'script','dataLayer','GTM-N92XCFB');</script>
+  <!-- End Google Tag Manager -->
+
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <!-- Browser tap settings -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 5 100 100%22><text y=%22.9em%22 font-size=%2280%22>🚗</text></svg>">
+  <title>Автолизинг (без Каско): Ежемесячный платёж</title>
+
+  <!-- Bootstrap core CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-+0n0xVW2eSR5OomGNYDnhzAbDsOXxcvSN1TPprVMTNDbiYZCxYbOOl7+AMvyTG2x" crossorigin="anonymous">
+
+  <!-- MomentJS core JS -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js" integrity="sha512-qTXRIMyZIFb8iQcfjXWCO8+M5Tbc38Qi5WzdPOYZHIlZpzBHG3L3by84BBBOiRGiEb7KKtAOAs5qYdUiZiQNNQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+  <!-- tableToExcel JS -->
+  <script src="https://cdn.jsdelivr.net/gh/linways/table-to-excel@v1.0.4/dist/tableToExcel.js"></script>
+</head>
+
+<body class="bg-light">
+
+  <!-- Google Tag Manager (noscript) -->
+  <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-N92XCFB"
+  height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+  <!-- End Google Tag Manager (noscript) -->
+
+  <div class="container">
+
+    <!-- Container 1: description -->
+    <div class="container">
+      <div class="text-center">
+        <div style="font-size:5rem; width:100%; text-align:center;">🚗</div>
+        <h1>Расчёт ежемесячного платежа</h1>
+      </div>
+    </div>
+
+    <!-- Container 2: exchange rate -->
+    <div class="container py-4 my-4">
+      <h5 class="text-center">Курс валют: UAH USD</h5>
+      <p class="text-center">
+        <span class="badge d-none text-wrap" id="exchange_rate_statusmessage" style="font-size: 0.9rem;"></span>
+      <div class="spinner-border d-none" role="status" id="exchange_rate_statusspinner"></div>
+      </p>
+      <div class="col-md-4 offset-md-4 col-sm-6 offset-sm-3">
+        <table class="table text-center">
+          <thead>
+            <tr style="font-size: 0.9rem;">
+              <th scope="col" style="width: 40%;">Источник</th>
+              <th scope="col" style="width: 30%;">Обновлено</th>
+              <th scope="col" style="width: 30%;">Курс</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="font-size: 0.9rem;">
+              <td id="exchange_rate_source"></td>
+              <td id="exchange_rate_date"></td>
+              <td id="exchange_rate_value"></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Container 3: Client params + Evaluation results -->
+    <div class="container py-3 my-4">
+      <div class="row">
+        <div class="col-md-6 col-sm-12 px-1 mb-4">
+          <!-- Subcontainer 1: Client params -->
+          <h5>1. Пожелания Клиента</h5>
+          <p>
+            <span class="badge d-none text-wrap" id="min_payment_statusmessage" style="font-size: 0.9rem;"></span>
+          </p>
+          <div class="col-md-10 mb-3">
+            <label for="object_price" class="form-label">Цена автомобиля, USD:</label>
+            <input type="number" class="form-control" id="object_price" min="0" placeholder="10000" step="1000">
+          </div>
+          <div class="col-md-10 mb-3">
+            <label for="upfront_payment" class="form-label">Сколько у Клиента всего денег на покупку авто, USD:</label>
+            <input type="number" class="form-control" id="upfront_payment" min="0" placeholder="1000" step="100">
+          </div>
+          <div class="col-md-10 mb-3">
+            <label for="term" class="form-label">Срок, месяцев:</label>
+            <input type="number" class="form-control" id="term" min="0" placeholder="12" step="1">
+          </div>
+          <div class="col-md-10 mb-3">
+            <label for="discount_pct" class="form-label">Доля, которую можно не выплачивать (%):</label>
+            <input type="number" class="form-control" id="discount_pct" min="0" placeholder="0%" step="1">
+          </div>
+          <div class="col-md-10 mb-3">
+            <label for="tracker_price_uah" class="form-label">Стоимость трекера, единоразовая:</label>
+            <input type="number" class="form-control" id="tracker_price_uah" min="0.0" placeholder="0" step="50">
+          </div>
+          <button class="btn btn-primary btn-lg btn-block" type="submit" id="evaluate">Расчитать условия</button>
+        </div>
+        <div class="col-md-6 col-sm-12 px-1">
+          <!-- Subcontainer 2: Evaluation results -->
+          <h5>2. Итог расчета</h5>
+          <p>
+            <span class="badge d-none text-wrap" id="evaluation_statusmessage" style="font-size: 0.9rem;"></span>
+            <div class="spinner-border d-none" role="status" id="evaluation_statusspinner"></div>
+          </p>
+          <div class="col-md-12">
+            <table class="table">
+              <tbody>
+                <tr>
+                  <td>Сумма лизинга:</td>
+                  <td id="lease_sum_uah" style="text-align: right;">- грн.</td>
+                  <td id="lease_sum_usd" style="text-align: right;">- долл.</td>
+                </tr>
+                <tr>
+                  <td>Ежемесячный платеж:</td>
+                  <td id="monthly_payment_uah" style="text-align: right;">- грн.</td>
+                  <td id="monthly_payment_usd" style="text-align: right;">- долл.</td>
+                </tr>
+                <tr>
+                  <td>Переплата за весь срок:</td>
+                  <td id="overpayment_uah" style="text-align: right;">- грн.</td>
+                  <td id="overpayment_usd" style="text-align: right;">- долл.</td>
+                </tr>
+                <tr>
+                  <td>Сумма, которую можно не выплачивать:</td>
+                  <td id="discount_uah" style="text-align: right;">- грн.</td>
+                  <td id="discount_usd" style="text-align: right;">- долл.</td>
+                </tr>
+              </tbody>
+            </table>
+            <p class="text-center" style="font-size: 0.75rem;">(Все суммы лизинга вносятся в гривне без привязки к курсу доллара США)</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Container 4: Payments plan -->
+    <div class="d-none container py-3 px-3 my-4" id="payments_plan_container">
+      <div class="row">
+        <h5>3. График платежей</h5>
+        <div class="table-responsive">
+          <table class="table" id="payment_schedule_table">
+            <thead style="text-align: center;">
+              <th>Номер платежу</th>
+              <th>Дата платежу</th>
+              <th>Відшкодування вартості Об'єкту лізингу</th>
+              <th>Винагорода лізингодавця</th>
+              <th>Відшкодування вартості страхування</th>
+              <th>Лізинговий платіж</th>
+            </thead>
+            <tbody id="payment_schedule">
+            </tbody>
+          </table>
+        </div>
+        <button class="btn btn-primary btn-lg btn-block" type="submit" id="payment_schedule_download_btn">Сохранить график платежей</button>
+      </div>
+    </div>
+
+    <!-- Container 6: Footer -->
+    <footer class="my-5 pt-5 text-muted text-center text-small">
+      <p class="mb-1">&copy; 2021 ФастФінанс</p>
+      <ul class="list-inline">
+        <li class="list-inline-item"><a href="tel:+380689389889">+38 068 938-98-89</a></li>
+        <li class="list-inline-item"><a href="mailto:info@fastfinance.com.ua">info@fastfinance.com.ua</a></li>
+      </ul>
+    </footer>
+
+  </div>
+
+  <!-- jQuery JavaScript -->
+  <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+  <!-- Bootstrap core JavaScript -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-gtEjrD/SeCtmISkJkNUaaKMoLD0//ElJ19smozuHV6z3Iehds+3Ulb9Bn9Plx0x4" crossorigin="anonymous"></script>
+
+  <!-- Custom JavaScript scripts -->
+  <script>
+    // set up initial fields values
+    var commission = 0.0299;
+    var irr_target = 0.5;
+    var upfront_payment_pct_target = 0.2;
+
+    var usd_uah_response;
+    var usd_uah_rate;
+  </script>
+
+  <script>
+    // set up exchange rate values
+    $(document).ready(function () {
+      $('#exchange_rate_statusspinner').removeClass('d-none');
+
+      $('#exchange_rate_statusmessage').removeClass('d-none');
+      $('#exchange_rate_statusmessage').addClass('bg-warning');
+      $('#exchange_rate_statusmessage').text('Загрузка курсов валют...');
+
+      $.ajax({
+        url: "http://0.0.0.0:5000/api/exchange_rates/nbu/",
+        type: 'GET',
+        dataType: 'json',
+        success: function (res) {
+          usd_uah_response = res;
+          usd_uah_rate = res['rate']['rate'];
+
+          $('#exchange_rate_source').text('Національний банк України');
+          $('#exchange_rate_date').text(res['rate']['exchangedate']);
+          $('#exchange_rate_value').text(usd_uah_rate);
+        },
+        complete: function (res) {
+          $('#exchange_rate_statusspinner').addClass('d-none');
+
+          $('#exchange_rate_statusmessage').removeClass('bg-warning');
+          $('#exchange_rate_statusmessage').addClass('bg-success');
+          $('#exchange_rate_statusmessage').text('Курс обновлён');
+        }
+      });
+    });
+  </script>
+
+  <script>
+    // set up evaluate button behaviour
+    function validate_upfront_payment_value(params) {
+      let object_price = parseFloat($('#object_price').val());
+      let upfront_payment = parseFloat($('#upfront_payment').val());
+
+      let object_price_uah = object_price * usd_uah_rate;
+      let upfront_payment_uah = upfront_payment * usd_uah_rate;
+
+      let pct_value = (upfront_payment_uah - object_price_uah * commission - 3000.0) / object_price_uah
+
+      if (pct_value >= upfront_payment_pct_target) {
+        return {
+          'status': 'ok',
+          'pct': pct_value
+        }
+      } else {
+        let alternative = Math.ceil(upfront_payment + object_price * (upfront_payment_pct_target - pct_value))
+        return {
+          'status': 'failed',
+          'pct': pct_value,
+          'alternative': alternative
+        }
+      }
+    }
+
+    function customized_round(x) {
+      return Number((x).toFixed(0)).toLocaleString()
+      // return Number.parseFloat(x).toFixed(2);
+    }
+
+    var ExcelFormulas = {
+      PMT: function (rate, nper, pv, fv, type) {
+        if (!fv) fv = 0;
+        if (!type) type = 0;
+
+        if (rate == 0) return -(pv + fv) / nper;
+
+        var pvif = Math.pow(1 + rate, nper);
+        var pmt = rate / (pvif - 1) * -(pv * pvif + fv);
+
+        if (type == 1) {
+          pmt /= (1 + rate);
+        };
+
+        return pmt;
+      },
+
+      IPMT: function (pv, pmt, rate, per) {
+        var tmp = Math.pow(1 + rate, per);
+        return 0 - (pv * tmp * rate + pmt * (tmp - 1));
+      },
+
+      PPMT: function (rate, per, nper, pv, fv, type) {
+        if (per < 1 || (per >= nper + 1)) return null;
+        var pmt = this.PMT(rate, nper, pv, fv, type);
+        var ipmt = this.IPMT(pv, pmt, rate, per - 1);
+        return pmt - ipmt;
+      },
+    };
+
+    function handle_evaluate_button() {
+      minimal_payment_data = validate_upfront_payment_value();
+      minimal_payment_status = minimal_payment_data['status']
+      if (minimal_payment_status == 'ok') {
+        $('#min_payment_statusmessage').removeClass('d-none')
+        $('#min_payment_statusmessage').removeClass('bg-warning')
+        $('#min_payment_statusmessage').removeClass('bg-success')
+
+        $('#min_payment_statusmessage').addClass('bg-success')
+
+        $('#min_payment_statusmessage').text("Пожелания корректны")
+      } else {
+        $('#min_payment_statusmessage').removeClass('d-none')
+        $('#min_payment_statusmessage').removeClass('bg-warning')
+        $('#min_payment_statusmessage').removeClass('bg-success')
+
+        $('#min_payment_statusmessage').addClass('bg-warning')
+
+        $('#min_payment_statusmessage').text(
+          "Нужно увеличить взнос Клиента до " +
+          customized_round(minimal_payment_data['alternative']) +
+          " USD"
+        )
+        // do not proceed
+        return
+      }
+
+      $('#payments_plan_container').removeClass('d-none')
+
+      let object_price = parseFloat($('#object_price').val());
+      let upfront_payment = parseFloat($('#upfront_payment').val());
+      let term = parseInt($('#term').val());
+      let discount_pct = parseInt($('#discount_pct').val());
+      let tracker_price_uah = parseInt($('#tracker_price_uah').val())
+
+      $('#evaluation_statusmessage').removeClass('d-none');
+      $('#evaluation_statusspinner').removeClass('d-none');
+
+      $('#evaluation_statusmessage').addClass('bg-warning');
+      $('#evaluation_statusmessage').text('Расчёт платежей...');
+
+      find_rate_having_irr_request_data = {
+        "car_price_usd": object_price,
+        "down_payment_usd": upfront_payment,
+        "lease_term_months": term,
+        "discount_pct": discount_pct / 100.0,
+        "commission_pct": commission,
+        "tracker_price_uah": tracker_price_uah,
+        "desired_irr_pct": irr_target,
+        "exchange_rate": usd_uah_rate,
+        "precision": 1
+      }
+
+      $.ajax({
+        url: "http://0.0.0.0:5000/api/fin_picking/v2/",
+        type: 'POST',
+        dataType: 'json',
+        data: JSON.stringify(find_rate_having_irr_request_data),
+        success: function (res) {
+          console.log(res)
+
+          let best_candidate = res['result'];
+
+          let lease_sum_uah =
+            usd_uah_rate * object_price -
+            (
+              usd_uah_rate * upfront_payment -
+              usd_uah_rate * object_price * commission -
+              3000
+            );
+          $('#lease_sum_uah').text(customized_round((lease_sum_uah)) + ' грн.');
+          $('#lease_sum_usd').text(customized_round((lease_sum_uah / usd_uah_rate)) + ' долл.');
+
+          let monthly_payment_uah = best_candidate['monthly_payment'];
+          $('#monthly_payment_uah').text(customized_round((monthly_payment_uah)) + ' грн.');
+          $('#monthly_payment_usd').text(customized_round((monthly_payment_uah / usd_uah_rate)) + ' долл.');
+
+          let overpayment_uah = monthly_payment_uah * term - lease_sum_uah
+          $('#overpayment_uah').text(customized_round((overpayment_uah)) + ' грн.');
+          $('#overpayment_usd').text(customized_round((overpayment_uah / usd_uah_rate)) + ' долл.');
+
+          let discount_uah = best_candidate['discount_uah']
+          $('#discount_uah').text(customized_round((discount_uah)) + ' грн.');
+          $('#discount_usd').text(customized_round((discount_uah / usd_uah_rate)) + ' долл.');
+
+          $("#payment_schedule tr").remove();
+          for (i = 1; i <= term; i++) {
+            let today = new Date()
+            let today_plus_x_months = new Date(today.setMonth(today.getMonth() + i));
+
+            let ppmt_value = ExcelFormulas.PPMT(
+              best_candidate['candidate_rate_pct'] / 12.0,
+              i,
+              term,
+              ((usd_uah_rate * object_price) - (usd_uah_rate * object_price) * (minimal_payment_data['pct'])) * -1.0,
+              0,
+              0
+            )
+            let pmt_value = ExcelFormulas.PMT(
+              best_candidate['candidate_rate_pct'] / 12.0,
+              term,
+              ((usd_uah_rate * object_price) - (usd_uah_rate * object_price) * (minimal_payment_data['pct'])) * -1.0,
+              0,
+              0
+            )
+            let ipmt_value = ExcelFormulas.IPMT(
+              ((usd_uah_rate * object_price) - (usd_uah_rate * object_price) * (minimal_payment_data['pct'])) * -1.0,
+              pmt_value,
+              best_candidate['candidate_rate_pct'] / 12.0,
+              i - 1
+            )
+
+            $('#payment_schedule').append(
+              '<tr>' +
+              '<td style="text-align: center;">' + i + '</td>' +
+              '<td style="text-align: center;">' + moment().add(i, 'months').format('DD.MM.YYYY') + '</td>' +
+
+              '<td style="text-align: center;">' + customized_round(ppmt_value) + '</td>' +
+
+              '<td style="text-align: center;">' + customized_round(ipmt_value) + '</td>' +
+
+              '<td style="text-align: center;">' + 0 + '</td>' +
+
+              '<td style="text-align: center;">' + customized_round(best_candidate['monthly_payment']) + '</td>' +
+              '</tr>'
+            )
+          }
+        },
+        complete: function (data) {
+          $('#evaluation_statusspinner').addClass('d-none');
+          $('#evaluation_statusmessage').removeClass('bg-warning');
+
+          $('#evaluation_statusmessage').addClass('bg-success');
+
+          $('#evaluation_statusmessage').text('Расчёт обновлён');
+        }
+      });
+    };
+
+    // handle button click
+    $("#evaluate").click(handle_evaluate_button);
+
+    // handle enter click
+    $(document).keypress(function (e) {
+      var key = e.which;
+      var enter_key_code = 13;
+      if (key == enter_key_code) {
+        handle_evaluate_button()
+      }
+    });
+  </script>
+
+  <script>
+    // handle save excel button behavior
+    $(document).ready(function () {
+      $("#payment_schedule_download_btn").click(function () {
+        let table = document.getElementById("payment_schedule_table");
+        TableToExcel.convert(
+          table,
+          {
+            name: 'lease_params_report_' + moment().format('YYYYMMDD_HHMM') + '.xlsx',
+            sheet: {
+              name: '1. График платежей'
+            }
+          }
+        );
+      });
+    });
+  </script>
+
+</body>
+
+</html>

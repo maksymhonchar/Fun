@@ -1,0 +1,106 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+
+<head>
+  <!-- Google Tag Manager -->
+  <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+  new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+  j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+  'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+  })(window,document,'script','dataLayer','GTM-N92XCFB');</script>
+  <!-- End Google Tag Manager -->
+
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <!-- Browser tap settings -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 5 100 100%22><text y=%22.9em%22 font-size=%2280%22>🚗</text></svg>">
+  <title>История расчётов: Способность обслуживать кредит</title>
+
+  <!-- Bootstrap core CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-+0n0xVW2eSR5OomGNYDnhzAbDsOXxcvSN1TPprVMTNDbiYZCxYbOOl7+AMvyTG2x" crossorigin="anonymous">
+
+  <!-- MomentJS core JS -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js" integrity="sha512-qTXRIMyZIFb8iQcfjXWCO8+M5Tbc38Qi5WzdPOYZHIlZpzBHG3L3by84BBBOiRGiEb7KKtAOAs5qYdUiZiQNNQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+  <STYLE>A {text-decoration: none;} </STYLE>
+</head>
+
+<body class="bg-light">
+
+  <!-- Google Tag Manager (noscript) -->
+  <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-N92XCFB"
+  height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+  <!-- End Google Tag Manager (noscript) -->
+
+  <div class="container">
+
+    <!-- Container 1: Description -->
+    <div class="container">
+      <div class="text-center">
+        <div style="font-size:5rem; width:100%; text-align:center;">
+          <a href="/">🚗</a>
+        </div>
+        <h1>История расчётов Способности обслуживать кредит</h1>
+      </div>
+    </div>
+
+    <!-- Container 2: List of IR calculations -->
+    <div class="container my-4 pt-4">
+      <ul id="ir_calculations_list"></ul>
+    </div>
+
+    <!-- Container 3: Footer -->
+    <footer class="mt-5 pt-5 text-muted text-center text-small">
+      <p class="mb-1">&copy; 2021 ФастФінанс</p>
+      <ul class="list-inline">
+        <li class="list-inline-item"><a href="tel:+380689389889">+38 068 938-98-89</a></li>
+        <li class="list-inline-item"><a href="mailto:info@fastfinance.com.ua">info@fastfinance.com.ua</a></li>
+      </ul>
+    </footer>
+
+  </div>
+
+  <!-- jQuery JavaScript -->
+  <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+  <!-- Bootstrap core JavaScript -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-gtEjrD/SeCtmISkJkNUaaKMoLD0//ElJ19smozuHV6z3Iehds+3Ulb9Bn9Plx0x4" crossorigin="anonymous"></script>
+
+  <!-- Custom JavaScript scripts -->
+
+  <script>
+    // Set up List of IR calculations
+    $(document).ready(function () {
+      $.ajax({
+        url: "../api/ir_picking/calculations/",
+        type: 'GET',
+        dataType: 'json',
+        complete: function (res) {
+          // display debugging info
+          console.log(res.responseJSON);
+
+          // fill list of IR calculations
+          res = res.responseJSON;
+
+          for (let idx = 0; idx < res['result'].length; idx++) {
+            const ir_calculation_data = res['result'][idx];
+            let ir_calculation_id = ir_calculation_data[0];
+            let ir_calculation_create_time = ir_calculation_data[1];
+            let ir_calculation_payload = ir_calculation_data[2];
+            
+            $("#ir_calculations_list").append(
+              '<li>' +
+                '<a href="../ir/' + ir_calculation_id + '/">Расчёт №' + ir_calculation_id + '</a>' +
+                ', [' + moment(ir_calculation_create_time).format('DD.MM.YYYY HH:mm') + ']' +
+              '</li>'
+            );
+          }
+        }
+      });
+    });
+  </script>
+
+</body>
+
+</html>
