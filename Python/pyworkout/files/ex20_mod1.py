@@ -1,5 +1,4 @@
 from collections import defaultdict
-from contextlib import contextmanager
 
 
 def count_words() -> dict:

@@ -1,0 +1,26 @@
+2022-03-09T13:52:33.381289+00:00 heroku[web.1]: Unidling
+2022-03-09T13:52:33.383046+00:00 heroku[web.1]: State changed from down to starting
+2022-03-09T13:52:37.591324+00:00 heroku[web.1]: Starting process with command `gunicorn nadineproject.wsgi`
+2022-03-09T13:52:38.820435+00:00 app[web.1]: [2022-03-09 13:52:38 +0000] [4] [INFO] Starting gunicorn 20.1.0
+2022-03-09T13:52:38.820778+00:00 app[web.1]: [2022-03-09 13:52:38 +0000] [4] [INFO] Listening at: http://0.0.0.0:57571 (4)
+2022-03-09T13:52:38.820824+00:00 app[web.1]: [2022-03-09 13:52:38 +0000] [4] [INFO] Using worker: sync
+2022-03-09T13:52:38.824281+00:00 app[web.1]: [2022-03-09 13:52:38 +0000] [9] [INFO] Booting worker with pid: 9
+2022-03-09T13:52:38.878714+00:00 app[web.1]: [2022-03-09 13:52:38 +0000] [10] [INFO] Booting worker with pid: 10
+2022-03-09T13:52:39.335724+00:00 heroku[web.1]: State changed from starting to up
+2022-03-09T13:52:40.515013+00:00 heroku[router]: at=info method=GET path="/" host=xyz.com request_id=5bb537df-d1a2-4196-a4a2-0e5adecae0e8 fwd="46.200.211.244" dyno=web.1 connect=0ms service=13ms status=200 bytes=1608 protocol=http
+2022-03-09T13:52:40.514756+00:00 app[web.1]: 10.1.45.100 - - [09/Mar/2022:13:52:40 +0000] "GET / HTTP/1.1" 200 1326 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.51 Safari/537.36"
+2022-03-09T13:52:42.573307+00:00 heroku[router]: at=info method=GET path="/hello/" host=xyz.com request_id=a02b52c5-e719-4a89-80bb-f23592a9ce29 fwd="46.200.211.244" dyno=web.1 connect=0ms service=23ms status=200 bytes=2161 protocol=http
+2022-03-09T13:52:42.573152+00:00 app[web.1]: 10.1.45.100 - - [09/Mar/2022:13:52:42 +0000] "GET /hello/ HTTP/1.1" 200 1879 "http://xyz.com/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.51 Safari/537.36"
+2022-03-09T13:52:44.657447+00:00 heroku[router]: at=info method=GET path="/goodbye/" host=xyz.com request_id=df2714ce-13f6-4aab-aa03-53e66a0a101b fwd="46.200.211.244" dyno=web.1 connect=1ms service=7ms status=200 bytes=1526 protocol=http
+2022-03-09T13:52:44.657224+00:00 app[web.1]: 10.1.45.100 - - [09/Mar/2022:13:52:44 +0000] "GET /goodbye/ HTTP/1.1" 200 1244 "http://xyz.com/hello/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.51 Safari/537.36"
+2022-03-09T13:52:57.213201+00:00 heroku[router]: at=info method=GET path="/favicon.ico" host=xyz.com request_id=a0d99e12-0056-4378-ae06-8b720148ce78 fwd="46.200.211.244" dyno=web.1 connect=0ms service=10ms status=404 bytes=2935 protocol=http
+2022-03-09T13:52:57.212547+00:00 app[web.1]: Not Found: /favicon.ico
+2022-03-09T13:52:57.212925+00:00 app[web.1]: 10.1.45.100 - - [09/Mar/2022:13:52:57 +0000] "GET /favicon.ico HTTP/1.1" 404 2661 "http://xyz.com/goodbye/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.51 Safari/537.36"
+2022-03-09T14:28:12.536805+00:00 heroku[web.1]: Idling
+2022-03-09T14:28:12.647903+00:00 heroku[web.1]: State changed from up to down
+2022-03-09T14:28:13.538322+00:00 heroku[web.1]: Stopping all processes with SIGTERM
+2022-03-09T14:28:14.142783+00:00 heroku[web.1]: Process exited with status 0
+2022-03-09T14:28:13.904937+00:00 app[web.1]: [2022-03-09 14:28:13 +0000] [9] [INFO] Worker exiting (pid: 9)
+2022-03-09T14:28:13.905040+00:00 app[web.1]: [2022-03-09 14:28:13 +0000] [4] [INFO] Handling signal: term
+2022-03-09T14:28:13.905988+00:00 app[web.1]: [2022-03-09 14:28:13 +0000] [10] [INFO] Worker exiting (pid: 10)
+2022-03-09T14:28:14.005478+00:00 app[web.1]: [2022-03-09 14:28:14 +0000] [4] [INFO] Shutting down: Master
