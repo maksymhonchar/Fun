@@ -1,11 +1,11 @@
-Working with 156 files is one of the easiest and most straightforward things you can
-do in Python. It’s also one of the most common things that we need to do, since
-programs that don’t interact with the filesystem are rather boring.
- In this chapter, 22 we’ll practice working with files—reading from them, writing to
-them, and manipulating the data that they contain. Along the way, you’ll get used
-to some of the paradigms that are commonly used when working with Python files,
-such as iterating 23 over a file’s contents and writing to files in a with block.
- In some cases, we’ll work with data formatted as CSV (comma-separated values)
-or JSON (JavaScript 21 object notation), two common formats that modules in Python’s
-standard library handle. If you’ve forgotten the basics of CSV or JSON, I have some
-short reminders in this chapter.
+This is a test file.
+
+It contains 28 words and 20 different words.
+
+It also contains 165 characters.
+
+It also contains 11 lines.
+
+It is also self-referential.
+
+Wow!
