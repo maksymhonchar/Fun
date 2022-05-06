@@ -1,3 +1,0 @@
-hi guys
-welcome to python
-hurray!
