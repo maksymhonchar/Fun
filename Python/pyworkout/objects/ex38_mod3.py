@@ -1,6 +1,3 @@
-from io import open_code
-
-
 class LogFile(object):
 
     def __init__(

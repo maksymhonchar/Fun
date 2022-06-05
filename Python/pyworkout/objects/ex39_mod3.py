@@ -1,5 +1,5 @@
-from dataclasses import dataclass as dataclass
-from dataclasses import field
+from dataclasses import dataclass
+from dataclasses import field as dcls_field
 from typing import List
 
 
@@ -14,7 +14,7 @@ class Book():
 @dataclass
 class Shelf():
     width: float
-    books: List[Book] = field(default_factory=list)
+    books: List[Book] = dcls_field(default_factory=list)
 
     def add_book(
         self,
